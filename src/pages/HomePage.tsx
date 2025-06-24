@@ -1,19 +1,20 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Calendar, Users, Award, FileText, ArrowRight, Sparkles, Star, Heart } from 'lucide-react'
+import { Calendar, Users, Award, FileText, ArrowRight, Sparkles, Star, Heart, Briefcase, TrendingUp, Network } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import ParticleBackground from '../components/ParticleBackground'
 import AnimatedCounter from '../components/AnimatedCounter'
 
 /**
- * Enhanced homepage with purple accents and improved animations
+ * Enhanced homepage with career development imagery and purple accents
  */
 function HomePage() {
   const [heroRef, heroInView] = useInView({ threshold: 0.3, triggerOnce: true })
   const [aboutRef, aboutInView] = useInView({ threshold: 0.3, triggerOnce: true })
   const [programsRef, programsInView] = useInView({ threshold: 0.3, triggerOnce: true })
   const [impactRef, impactInView] = useInView({ threshold: 0.3, triggerOnce: true })
+  const [careerRef, careerInView] = useInView({ threshold: 0.3, triggerOnce: true })
 
   const impactStats = [
     { number: 25000, label: 'Community members served', suffix: '+' },
@@ -41,6 +42,30 @@ function HomePage() {
       description: 'Personalized guidance and support throughout your job search journey.',
       color: 'from-green-500 to-blue-500'
     },
+  ]
+
+  const careerBenefits = [
+    {
+      icon: <Briefcase className="h-12 w-12" />,
+      title: 'Direct Employer Access',
+      description: 'Meet hiring managers and recruiters from top Vancouver companies face-to-face.',
+      image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800',
+      color: 'from-blue-500 to-purple-500'
+    },
+    {
+      icon: <Network className="h-12 w-12" />,
+      title: 'Professional Networking',
+      description: 'Build valuable connections that can accelerate your career growth.',
+      image: 'https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=800',
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      icon: <TrendingUp className="h-12 w-12" />,
+      title: 'Career Advancement',
+      description: 'Discover new opportunities and take the next step in your professional journey.',
+      image: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg?auto=compress&cs=tinysrgb&w=800',
+      color: 'from-green-500 to-blue-500'
+    }
   ]
 
   const containerVariants = {
@@ -156,10 +181,80 @@ function HomePage() {
         </motion.div>
       </section>
 
-      {/* Enhanced About Section */}
+      {/* New Career Development Section */}
       <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-orange-100/20 to-purple-100/20 rounded-full blur-2xl" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            ref={careerRef}
+            initial="hidden"
+            animate={careerInView ? "visible" : "hidden"}
+            variants={containerVariants}
+            className="text-center mb-16"
+          >
+            <motion.h2 
+              variants={itemVariants}
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-8"
+            >
+              Why Choose Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Career Fair?</span>
+            </motion.h2>
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
+            >
+              Experience the difference that personalized career development can make in your professional journey
+            </motion.p>
+          </motion.div>
+
+          <motion.div 
+            variants={containerVariants}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          >
+            {careerBenefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ y: -15, scale: 1.03 }}
+                className="group relative overflow-hidden rounded-2xl shadow-xl"
+              >
+                {/* Image Background */}
+                <div className="relative h-64 overflow-hidden">
+                  <img 
+                    src={benefit.image} 
+                    alt={benefit.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20" />
+                </div>
+                
+                {/* Content Overlay */}
+                <div className="absolute inset-0 flex flex-col justify-end p-8">
+                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${benefit.color} text-white mb-4 w-fit shadow-lg`}>
+                    {benefit.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-white/90 leading-relaxed">
+                    {benefit.description}
+                  </p>
+                </div>
+
+                {/* Hover Effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/0 to-purple-600/0 group-hover:from-purple-600/10 group-hover:to-blue-600/10 transition-all duration-500" />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Enhanced About Section */}
+      <section className="bg-gradient-to-br from-gray-50 to-purple-50/50 section-padding relative overflow-hidden">
+        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
+        <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />
         
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
@@ -197,9 +292,9 @@ function HomePage() {
       </section>
 
       {/* Enhanced Programs Section */}
-      <section className="bg-gradient-to-br from-gray-50 to-purple-50/50 section-padding relative overflow-hidden">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
-        <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />
+      <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-orange-100/20 to-purple-100/20 rounded-full blur-2xl" />
         
         <div className="max-w-7xl mx-auto relative">
           <motion.div
