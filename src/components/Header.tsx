@@ -141,7 +141,7 @@ function Header() {
                 />
                 <div className="flex flex-col">
                   <span className={`text-2xl font-black transition-colors ${getLogoTextColor()}`}>
-                    VIVA
+                    Vancouver
                   </span>
                   <span className={`text-xs font-medium transition-colors ${getSubtitleColor()}`}>
                     Career Fair
