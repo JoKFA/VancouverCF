@@ -15,7 +15,9 @@
     "react-router-dom": "^6.20.1",
     "@supabase/supabase-js": "^2.38.4",
     "mammoth": "^1.6.0",
-    "lucide-react": "^0.294.0"
+    "lucide-react": "^0.294.0",
+    "framer-motion": "^10.16.16",
+    "react-intersection-observer": "^9.5.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
