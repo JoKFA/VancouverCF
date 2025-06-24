@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 
 /**
- * Enhanced navigation header with animations and glass morphism effect
+ * Enhanced navigation header with logo and improved animations
  */
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -60,7 +60,7 @@ function Header() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled 
-            ? 'bg-white/80 backdrop-blur-md shadow-lg border-b border-white/20' 
+            ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-white/20' 
             : 'bg-transparent'
         }`}
       >
@@ -68,13 +68,29 @@ function Header() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center group">
-              <motion.span 
-                className="text-3xl font-black text-gradient"
-                whileHover={{ scale: 1.05 }}
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="flex items-center"
               >
-                VIVA
-              </motion.span>
+                <img 
+                  src="/cropped-unnamed-1.png" 
+                  alt="Vancouver Career Fair" 
+                  className="h-12 w-12 mr-3 rounded-lg shadow-lg"
+                />
+                <div className="flex flex-col">
+                  <span className={`text-2xl font-black transition-colors ${
+                    scrolled ? 'text-orange-600' : 'text-white'
+                  }`}>
+                    VIVA
+                  </span>
+                  <span className={`text-xs font-medium transition-colors ${
+                    scrolled ? 'text-gray-600' : 'text-white/80'
+                  }`}>
+                    Career Fair
+                  </span>
+                </div>
+              </motion.div>
             </Link>
 
             {/* Desktop Navigation */}
@@ -88,22 +104,25 @@ function Header() {
                 >
                   <Link
                     to={item.href}
-                    className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl ${
+                    className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl group ${
                       isActivePath(item.href)
-                        ? 'text-primary-600 bg-primary-50'
+                        ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
                         : scrolled 
-                          ? 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
-                          : 'text-white hover:text-primary-200 hover:bg-white/10'
+                          ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+                          : 'text-white hover:text-purple-200 hover:bg-white/10'
                     }`}
                   >
                     {item.name}
                     {isActivePath(item.href) && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute inset-0 bg-primary-100 rounded-xl -z-10"
+                        className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl -z-10 shadow-lg"
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
                     )}
+                    <motion.div
+                      className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-purple-400 group-hover:w-full group-hover:left-0 transition-all duration-300"
+                    />
                   </Link>
                 </motion.div>
               ))}
@@ -117,7 +136,7 @@ function Header() {
                     to="/admin"
                     className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
                       scrolled 
-                        ? 'text-primary-600 hover:bg-primary-50'
+                        ? 'text-purple-600 hover:bg-purple-50'
                         : 'text-white hover:bg-white/10'
                     }`}
                   >
@@ -136,17 +155,19 @@ function Header() {
                   </button>
                 </div>
               ) : (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowLoginModal(true)}
                   className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
                     scrolled 
-                      ? 'text-primary-600 hover:bg-primary-50'
-                      : 'text-white hover:bg-white/10'
+                      ? 'text-purple-600 hover:bg-purple-50 border border-purple-200'
+                      : 'text-white hover:bg-white/10 border border-white/30'
                   }`}
                 >
                   <Shield size={16} className="mr-2" />
                   Admin Login
-                </button>
+                </motion.button>
               )}
             </div>
 
@@ -155,7 +176,7 @@ function Header() {
               whileTap={{ scale: 0.95 }}
               className={`md:hidden p-3 rounded-xl transition-colors ${
                 scrolled 
-                  ? 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                  ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
                   : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -196,7 +217,7 @@ function Header() {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="md:hidden overflow-hidden"
               >
-                <div className="py-4 space-y-2 bg-white/90 backdrop-blur-md rounded-2xl mt-4 border border-white/20">
+                <div className="py-4 space-y-2 bg-white/95 backdrop-blur-lg rounded-2xl mt-4 border border-white/20 shadow-xl">
                   {navigationItems.map((item, index) => (
                     <motion.div
                       key={item.name}
@@ -208,8 +229,8 @@ function Header() {
                         to={item.href}
                         className={`block px-6 py-3 text-base font-semibold transition-all duration-300 rounded-xl mx-2 ${
                           isActivePath(item.href)
-                            ? 'text-primary-600 bg-primary-50'
-                            : 'text-gray-700 hover:text-primary-600 hover:bg-primary-50'
+                            ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600'
+                            : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
                         }`}
                         onClick={() => setIsMenuOpen(false)}
                       >
@@ -224,7 +245,7 @@ function Header() {
                       <div className="space-y-2">
                         <Link
                           to="/admin"
-                          className="flex items-center px-4 py-3 text-base font-semibold text-primary-600 hover:bg-primary-50 rounded-xl"
+                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           <Shield size={16} className="mr-2" />
@@ -246,7 +267,7 @@ function Header() {
                           setShowLoginModal(true)
                           setIsMenuOpen(false)
                         }}
-                        className="flex items-center px-4 py-3 text-base font-semibold text-primary-600 hover:bg-primary-50 rounded-xl w-full"
+                        className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl w-full"
                       >
                         <Shield size={16} className="mr-2" />
                         Admin Login
@@ -275,12 +296,12 @@ function Header() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+              className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl border border-purple-100"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield size={24} className="text-primary-600" />
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield size={24} className="text-purple-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Login</h2>
                 <p className="text-gray-600">Enter your credentials to access the admin panel</p>
@@ -295,7 +316,7 @@ function Header() {
                     type="email"
                     value={loginForm.email}
                     onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     placeholder="admin@example.com"
                     required
                   />
@@ -308,7 +329,7 @@ function Header() {
                     type="password"
                     value={loginForm.password}
                     onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     placeholder="Enter password"
                     required
                   />
@@ -323,18 +344,18 @@ function Header() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-300 shadow-lg"
                   >
                     Sign In
                   </button>
                 </div>
               </form>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="mt-6 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                <p className="text-sm text-purple-800 mb-2">
                   <strong>For development/testing:</strong>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-purple-600">
                   You'll need to set up Supabase authentication and create admin users in your database.
                 </p>
               </div>
