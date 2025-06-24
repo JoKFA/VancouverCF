@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 
 /**
- * Enhanced navigation header with logo and improved animations
+ * Enhanced navigation header with improved visibility on all pages
  */
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,6 +21,9 @@ function Header() {
     { name: 'Resume', href: '/resume' },
     { name: 'About', href: '/about' },
   ]
+
+  // Check if we're on homepage
+  const isHomePage = location.pathname === '/'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,17 +55,75 @@ function Header() {
     }
   }
 
+  // Determine header styling based on page and scroll state
+  const getHeaderStyles = () => {
+    if (isHomePage) {
+      // Homepage: transparent when at top, solid when scrolled
+      return scrolled 
+        ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-white/20' 
+        : 'bg-transparent'
+    } else {
+      // Other pages: always solid background for visibility
+      return scrolled
+        ? 'bg-white/98 backdrop-blur-lg shadow-xl border-b border-purple-100'
+        : 'bg-white/90 backdrop-blur-md shadow-lg border-b border-purple-100/50'
+    }
+  }
+
+  // Determine text colors based on page and scroll state
+  const getTextColor = (isActive = false) => {
+    if (isHomePage && !scrolled) {
+      // Homepage at top: white text
+      return isActive 
+        ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
+        : 'text-white hover:text-purple-200 hover:bg-white/10'
+    } else {
+      // All other cases: dark text
+      return isActive
+        ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
+        : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+    }
+  }
+
+  const getLogoTextColor = () => {
+    if (isHomePage && !scrolled) {
+      return 'text-white'
+    } else {
+      return 'text-orange-600'
+    }
+  }
+
+  const getSubtitleColor = () => {
+    if (isHomePage && !scrolled) {
+      return 'text-white/80'
+    } else {
+      return 'text-gray-600'
+    }
+  }
+
+  const getButtonColor = () => {
+    if (isHomePage && !scrolled) {
+      return 'text-white hover:bg-white/10 border border-white/30'
+    } else {
+      return 'text-purple-600 hover:bg-purple-50 border border-purple-200'
+    }
+  }
+
+  const getMobileButtonColor = () => {
+    if (isHomePage && !scrolled) {
+      return 'text-white hover:bg-white/10'
+    } else {
+      return 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
+    }
+  }
+
   return (
     <>
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled 
-            ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-white/20' 
-            : 'bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${getHeaderStyles()}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
@@ -79,14 +140,10 @@ function Header() {
                   className="h-12 w-12 mr-3 rounded-lg shadow-lg"
                 />
                 <div className="flex flex-col">
-                  <span className={`text-2xl font-black transition-colors ${
-                    scrolled ? 'text-orange-600' : 'text-white'
-                  }`}>
+                  <span className={`text-2xl font-black transition-colors ${getLogoTextColor()}`}>
                     VIVA
                   </span>
-                  <span className={`text-xs font-medium transition-colors ${
-                    scrolled ? 'text-gray-600' : 'text-white/80'
-                  }`}>
+                  <span className={`text-xs font-medium transition-colors ${getSubtitleColor()}`}>
                     Career Fair
                   </span>
                 </div>
@@ -104,13 +161,7 @@ function Header() {
                 >
                   <Link
                     to={item.href}
-                    className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl group ${
-                      isActivePath(item.href)
-                        ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
-                        : scrolled 
-                          ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
-                          : 'text-white hover:text-purple-200 hover:bg-white/10'
-                    }`}
+                    className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl group ${getTextColor(isActivePath(item.href))}`}
                   >
                     {item.name}
                     {isActivePath(item.href) && (
@@ -135,9 +186,9 @@ function Header() {
                   <Link
                     to="/admin"
                     className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                      scrolled 
-                        ? 'text-purple-600 hover:bg-purple-50'
-                        : 'text-white hover:bg-white/10'
+                      isHomePage && !scrolled 
+                        ? 'text-white hover:bg-white/10'
+                        : 'text-purple-600 hover:bg-purple-50'
                     }`}
                   >
                     <Shield size={16} className="mr-2" />
@@ -146,9 +197,9 @@ function Header() {
                   <button
                     onClick={signOut}
                     className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                      scrolled 
-                        ? 'text-gray-600 hover:bg-gray-100'
-                        : 'text-white hover:bg-white/10'
+                      isHomePage && !scrolled 
+                        ? 'text-white hover:bg-white/10'
+                        : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     Sign Out
@@ -159,11 +210,7 @@ function Header() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowLoginModal(true)}
-                  className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                    scrolled 
-                      ? 'text-purple-600 hover:bg-purple-50 border border-purple-200'
-                      : 'text-white hover:bg-white/10 border border-white/30'
-                  }`}
+                  className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${getButtonColor()}`}
                 >
                   <Shield size={16} className="mr-2" />
                   Admin Login
@@ -174,11 +221,7 @@ function Header() {
             {/* Mobile menu button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className={`md:hidden p-3 rounded-xl transition-colors ${
-                scrolled 
-                  ? 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
-                  : 'text-white hover:bg-white/10'
-              }`}
+              className={`md:hidden p-3 rounded-xl transition-colors ${getMobileButtonColor()}`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <AnimatePresence mode="wait">
