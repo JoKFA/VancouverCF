@@ -3,15 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-let supabase: ReturnType<typeof createClient>
-
 // More graceful handling of missing environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
   if (import.meta.env.DEV) {
     console.warn('Missing Supabase environment variables. Some features may not work.')
   }
   // Create a dummy client that won't crash the app
-  supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+  export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
     auth: { persistSession: false }
   })
 } else {
@@ -21,7 +19,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
       console.warn('Placeholder Supabase environment variables detected. Please update with your actual Supabase project credentials.')
     }
     // Create a dummy client for development
-    supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+    export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
       auth: { persistSession: false }
     })
   } else {
@@ -29,7 +27,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
     try {
       new URL(supabaseUrl)
       // Create the real client
-      supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
@@ -43,14 +41,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
         console.error(`Invalid VITE_SUPABASE_URL format: "${supabaseUrl}"`)
       }
       // Create a dummy client
-      supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+      export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
         auth: { persistSession: false }
       })
     }
   }
 }
-
-export { supabase }
 
 /**
  * Database type definitions
