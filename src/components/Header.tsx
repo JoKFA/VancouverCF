@@ -124,32 +124,33 @@ function Header() {
                   alt="Vancouver Career Fair" 
                   className="h-12 w-12 mr-3 rounded-lg shadow-lg"
                 />
-                    {user && (
-                      <div className="space-y-2">
-                        <Link
-                          to="/admin"
-                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Shield size={16} className="mr-2" />
-                          Admin Panel
-                        </Link>
-                        <button
-                          onClick={() => {
-                            signOut()
-                            setIsMenuOpen(false)
-                          }}
-                          className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-                        >
-                          Sign Out
-                        </button>
-                      </div>
-                    )}
+                <div>
+                  <h1 className={`text-xl font-bold ${getLogoTextColor()}`}>
+                    Vancouver Career Fair
+                  </h1>
+                  <p className={`text-sm ${getSubtitleColor()}`}>
+                    Connecting Talent with Opportunity
+                  </p>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${getTextColor(isActivePath(item.href))}`}
+                >
+                  {item.name}
+                  {isActivePath(item.href) && (
                     <motion.div
-                      className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-purple-400 group-hover:w-full group-hover:left-0 transition-all duration-300"
+                      layoutId="navigation-underline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-current"
                     />
-                  </Link>
-                </motion.div>
+                  )}
+                </Link>
               ))}
             </nav>
 
@@ -258,35 +259,34 @@ function Header() {
                   
                   {/* Mobile Admin Access */}
                   <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-        {/* Hidden Admin Access - Only show if user is already authenticated */}
-        {user && (
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/admin"
-              className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                isHomePage && !scrolled 
-                  ? 'text-white hover:bg-white/10'
-                  : 'text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              <Shield size={16} className="mr-2" />
-              Admin
-            </Link>
-            <button
-              onClick={signOut}
-              className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                isHomePage && !scrolled 
-                  ? 'text-white hover:bg-white/10'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Sign Out
-            </button>
-          </div>
-        )}
+                    {user && (
+                      <div className="space-y-2">
+                        <Link
+                          to="/admin"
+                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Shield size={16} className="mr-2" />
+                          Admin Panel
+                        </Link>
+                        <button
+                          onClick={() => {
+                            signOut()
+                            setIsMenuOpen(false)
+                          }}
+                          className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.header>
-
-      {/* Hidden Admin Login - Accessible via direct URL /admin-login for team members only */}
     </>
   )
 }
