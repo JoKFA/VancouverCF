@@ -10,17 +10,17 @@ import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 
 // Conditionally import admin components
-const AdminPage = import.meta.env.VITE_ADMIN_ENABLED === 'true' 
+const AdminPage = import.meta.env.VITE_ADMIN_ENABLED === 'true'
   ? React.lazy(() => import('./pages/AdminPage'))
-  : null
+  : () => Promise.resolve({ default: () => <div>Admin not available</div> })
 
 const AdminLoginPage = import.meta.env.VITE_ADMIN_ENABLED === 'true'
   ? React.lazy(() => import('./pages/AdminLoginPage'))
-  : null
+  : () => Promise.resolve({ default: () => <div>Admin not available</div> })
 
 const ProtectedRoute = import.meta.env.VITE_ADMIN_ENABLED === 'true'
   ? React.lazy(() => import('./components/ProtectedRoute'))
-  : null
+  : () => Promise.resolve({ default: ({ children }: any) => children })
 
 /**
  * Main application component that sets up routing and authentication context
@@ -45,10 +45,10 @@ function App() {
             <Route path="contact" element={<ContactPage />} />
             
             {/* Admin routes only available when enabled */}
-            {adminEnabled && AdminLoginPage && (
+            {adminEnabled && (
               <Route path="admin-login" element={<AdminLoginPage />} />
             )}
-            {adminEnabled && AdminPage && ProtectedRoute && (
+            {adminEnabled && (
               <Route 
                 path="admin" 
                 element={

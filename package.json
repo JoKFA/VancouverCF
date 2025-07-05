@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:staging": "vite --mode staging",
     "build": "tsc && vite build",
-    "build:production": "tsc && vite build --mode production",
     "build:staging": "tsc && vite build --mode staging",
+    "build:production": "tsc && vite build --mode production",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:staging": "vite preview --mode staging"
   },
   "dependencies": {
     "react": "^18.2.0",
