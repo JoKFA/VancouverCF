@@ -20,6 +20,7 @@ function Header() {
     { name: 'Events', href: '/events' },
     { name: 'Resume', href: '/resume' },
     { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' },
   ]
 
   // Check if we're on homepage

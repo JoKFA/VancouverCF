@@ -35,3 +35,13 @@ export interface Resume {
   file_url: string
   created_at: string
 }
+
+export interface TeamMember {
+  id: string
+  name: string
+  title: string
+  bio: string
+  avatar_url?: string
+  order_index: number
+  created_at: string
+}

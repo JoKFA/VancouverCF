@@ -7,6 +7,7 @@ import EventsPage from './pages/EventsPage'
 import BlogPage from './pages/BlogPage'
 import ResumePage from './pages/ResumePage'
 import AboutPage from './pages/AboutPage'
+import ContactPage from './pages/ContactPage'
 import AdminPage from './pages/AdminPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="events/:eventId" element={<BlogPage />} />
           <Route path="resume" element={<ResumePage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="contact" element={<ContactPage />} />
           <Route 
             path="admin" 
             element={

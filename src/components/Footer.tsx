@@ -26,6 +26,7 @@ function Footer() {
               <li><a href="/events" className="text-gray-300 hover:text-primary-400 transition-colors">Events</a></li>
               <li><a href="/resume" className="text-gray-300 hover:text-primary-400 transition-colors">Submit Resume</a></li>
               <li><a href="/about" className="text-gray-300 hover:text-primary-400 transition-colors">About</a></li>
+              <li><a href="/contact" className="text-gray-300 hover:text-primary-400 transition-colors">Contact</a></li>
             </ul>
           </div>
 
