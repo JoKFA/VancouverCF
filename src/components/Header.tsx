@@ -10,8 +10,10 @@ import { useAuth } from '../contexts/AuthContext'
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const location = useLocation()
-  const { user, signOut } = useAuth()
+  const { user, signIn, signOut } = useAuth()
 
   const navigationItems = [
     { name: 'Home', href: '/' },
