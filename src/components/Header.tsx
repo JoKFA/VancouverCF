@@ -194,7 +194,7 @@ function Header() {
                     Sign Out
                   </button>
                 </div>
-              ) : user && !isAdminEnabled ? (
+              ) : user ? (
                 <button
                   onClick={signOut}
                   className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${

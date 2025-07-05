@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useEffect } from 'react-router-dom'
 import { Shield, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
@@ -14,6 +14,14 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Check if admin is enabled
+  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+
+  // Redirect to home if admin is not enabled
+  if (!isAdminEnabled) {
+    return <Navigate to="/" replace />
+  }
+
   // Redirect if already logged in
   if (user) {
     return <Navigate to="/admin" replace />
@@ -24,12 +32,6 @@ function AdminLoginPage() {
    */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Check if admin is enabled
-    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
-      setError('Admin access is not available in this environment')
-      return
-    }
     
     setLoading(true)
     setError(null)
