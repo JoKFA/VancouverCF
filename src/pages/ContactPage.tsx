@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Phone, Mail, MapPin, Send, Clock, Users, Sparkles, Star, Heart, MessageCircle } from 'lucide-react'
+import { Phone, Mail, MapPin, Send, Clock, Users, Star, Heart, MessageCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { supabase, TeamMember } from '../lib/supabase'

@@ -166,56 +166,6 @@ function BlogPage() {
           />
         </article>
       </div>
-
-      <style jsx>{`
-        .blog-content h1,
-        .blog-content h2,
-        .blog-content h3,
-        .blog-content h4,
-        .blog-content h5,
-        .blog-content h6 {
-          font-weight: 600;
-          margin-top: 2rem;
-          margin-bottom: 1rem;
-          color: #1f2937;
-        }
-        
-        .blog-content h1 { font-size: 2rem; }
-        .blog-content h2 { font-size: 1.75rem; }
-        .blog-content h3 { font-size: 1.5rem; }
-        
-        .blog-content p {
-          margin-bottom: 1rem;
-          line-height: 1.7;
-          color: #374151;
-        }
-        
-        .blog-content ul,
-        .blog-content ol {
-          margin-bottom: 1rem;
-          padding-left: 1.5rem;
-        }
-        
-        .blog-content li {
-          margin-bottom: 0.5rem;
-          color: #374151;
-        }
-        
-        .blog-content img {
-          max-width: 100%;
-          height: auto;
-          border-radius: 0.5rem;
-          margin: 1.5rem 0;
-        }
-        
-        .blog-content blockquote {
-          border-left: 4px solid #3b82f6;
-          padding-left: 1rem;
-          margin: 1.5rem 0;
-          font-style: italic;
-          color: #6b7280;
-        }
-      `}</style>
     </div>
   )
 }
