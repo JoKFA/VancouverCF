@@ -140,32 +140,45 @@ function Header() {
                   alt="Vancouver Career Fair" 
                   className="h-12 w-12 mr-3 rounded-lg shadow-lg"
                 />
-                    {user && (
-                      <div className="space-y-2">
-                        <Link
-                          to="/admin"
-                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Shield size={16} className="mr-2" />
-                          Admin Panel
-                        </Link>
-                        <button
-                          onClick={() => {
-                            signOut()
-                            setIsMenuOpen(false)
-                          }}
-                          className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-                        >
-                          Sign Out
-                        </button>
-                      </div>
+                <div className="flex flex-col">
+                  <span className={`text-2xl font-black transition-colors ${getLogoTextColor()}`}>
+                    Vancouver
+                  </span>
+                  <span className={`text-xs font-medium transition-colors ${getSubtitleColor()}`}>
+                    Career Fair
+                  </span>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-2">
+              {navigationItems.map((item, index) => (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Link
+                    to={item.href}
+                    className={`relative px-6 py-3 text-sm font-semibold transition-all duration-300 rounded-xl group ${getTextColor(isActivePath(item.href))}`}
+                  >
+                    {item.name}
+                    {isActivePath(item.href) && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl -z-10 shadow-lg"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
                     )}
                     <motion.div
                       className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-purple-400 group-hover:w-full group-hover:left-0 transition-all duration-300"
                     />
-              </motion.div>
-            </Link>
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
 
             {/* Admin/Auth Section */}
             <div className="hidden md:flex items-center space-x-4">
