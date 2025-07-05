@@ -5,9 +5,6 @@ import { useInView } from 'react-intersection-observer'
 import ParticleBackground from '../components/ParticleBackground'
 import AnimatedCounter from '../components/AnimatedCounter'
 
-/**
- * Enhanced homepage with career development imagery and purple accents
- */
 function HomePage() {
   const [heroRef, heroInView] = useInView({ threshold: 0.3, triggerOnce: true })
   const [aboutRef, aboutInView] = useInView({ threshold: 0.3, triggerOnce: true })
@@ -91,13 +88,11 @@ function HomePage() {
 
   return (
     <div className="overflow-hidden">
-      {/* Enhanced Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-orange-500" />
         <div className="absolute inset-0 bg-black/20" />
         <ParticleBackground />
         
-        {/* Additional decorative elements */}
         <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 left-20 w-48 h-48 bg-purple-300/20 rounded-full blur-2xl" />
         <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-blue-300/15 rounded-full blur-xl" />
@@ -163,7 +158,6 @@ function HomePage() {
           </motion.div>
         </div>
 
-        {/* Enhanced scroll indicator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -180,7 +174,6 @@ function HomePage() {
         </motion.div>
       </section>
 
-      {/* New Career Development Section */}
       <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-orange-100/20 to-purple-100/20 rounded-full blur-2xl" />
@@ -218,7 +211,6 @@ function HomePage() {
                 whileHover={{ y: -15, scale: 1.03 }}
                 className="group relative overflow-hidden rounded-2xl shadow-xl"
               >
-                {/* Image Background */}
                 <div className="relative h-64 overflow-hidden">
                   <img 
                     src={benefit.image} 
@@ -229,7 +221,6 @@ function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20" />
                 </div>
                 
-                {/* Content Overlay */}
                 <div className="absolute inset-0 flex flex-col justify-end p-8">
                   <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-r ${benefit.color} text-white mb-4 w-fit shadow-lg`}>
                     {benefit.icon}
@@ -242,7 +233,6 @@ function HomePage() {
                   </p>
                 </div>
 
-                {/* Hover Effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-600/0 to-purple-600/0 group-hover:from-purple-600/10 group-hover:to-blue-600/10 transition-all duration-500" />
               </motion.div>
             ))}
@@ -250,7 +240,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced About Section */}
       <section className="bg-gradient-to-br from-gray-50 to-purple-50/50 section-padding relative overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
         <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />
@@ -290,7 +279,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced Programs Section */}
       <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-100/30 to-blue-100/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-orange-100/20 to-purple-100/20 rounded-full blur-2xl" />
@@ -346,7 +334,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced Impact Section */}
       <section className="relative overflow-hidden section-padding">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-orange-500" />
         <div className="absolute inset-0 bg-black/20" />
@@ -402,7 +389,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Enhanced CTA Section */}
       <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
         <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />
