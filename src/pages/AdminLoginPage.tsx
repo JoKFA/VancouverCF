@@ -24,14 +24,26 @@ function AdminLoginPage() {
    */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check if admin is enabled
+    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
+      setError('Admin access is not available in this environment')
+      return
+    }
+    
     setLoading(true)
     setError(null)
 
     try {
+      if (!loginForm.email.trim() || !loginForm.password.trim()) {
+        throw new Error('Please enter both email and password')
+      }
+      
       await signIn(loginForm.email, loginForm.password)
       // Navigation will happen automatically via the auth context
     } catch (error: any) {
-      setError('Invalid credentials. Please check your email and password.')
+      console.error('Login error:', error)
+      setError(error.message || 'Invalid credentials. Please check your email and password.')
     } finally {
       setLoading(false)
     }

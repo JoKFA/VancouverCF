@@ -9,24 +9,17 @@ import ResumePage from './pages/ResumePage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 
-// Conditionally import admin components
-const AdminPage = import.meta.env.VITE_ADMIN_ENABLED === 'true' 
-  ? React.lazy(() => import('./pages/AdminPage'))
-  : null
-
-const AdminLoginPage = import.meta.env.VITE_ADMIN_ENABLED === 'true'
-  ? React.lazy(() => import('./pages/AdminLoginPage'))
-  : null
-
-const ProtectedRoute = import.meta.env.VITE_ADMIN_ENABLED === 'true'
-  ? React.lazy(() => import('./components/ProtectedRoute'))
-  : null
+// Conditionally import admin components based on environment
+const AdminPage = React.lazy(() => import('./pages/AdminPage'))
+const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'))
+const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'))
 
 /**
  * Main application component that sets up routing and authentication context
  */
 function App() {
-  const adminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  // Check if admin functionality is enabled
+  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
 
   return (
     <AuthProvider>
@@ -45,10 +38,10 @@ function App() {
             <Route path="contact" element={<ContactPage />} />
             
             {/* Admin routes only available when enabled */}
-            {adminEnabled && AdminLoginPage && (
+            {isAdminEnabled && (
               <Route path="admin-login" element={<AdminLoginPage />} />
             )}
-            {adminEnabled && AdminPage && ProtectedRoute && (
+            {isAdminEnabled && (
               <Route 
                 path="admin" 
                 element={
@@ -58,6 +51,9 @@ function App() {
                 } 
               />
             )}
+            
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </React.Suspense>

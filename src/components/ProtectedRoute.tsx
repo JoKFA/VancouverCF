@@ -11,6 +11,14 @@ interface ProtectedRouteProps {
  */
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
+  
+  // Check if admin functionality is enabled
+  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  
+  // Redirect if admin is not enabled
+  if (!isAdminEnabled) {
+    return <Navigate to="/" replace />
+  }
 
   if (loading) {
     return (

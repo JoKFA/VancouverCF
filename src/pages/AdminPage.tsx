@@ -8,6 +8,14 @@ import { useAuth } from '../contexts/AuthContext'
  */
 function AdminPage() {
   const { signOut } = useAuth()
+  
+  // Security check - redirect if admin is not enabled
+  React.useEffect(() => {
+    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
+      window.location.href = '/'
+    }
+  }, [])
+  
   const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
   const [events, setEvents] = useState<Event[]>([])
   const [resumes, setResumes] = useState<Resume[]>([])

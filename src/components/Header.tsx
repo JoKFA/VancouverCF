@@ -10,10 +10,11 @@ import { useAuth } from '../contexts/AuthContext'
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const location = useLocation()
-  const { user, signIn, signOut } = useAuth()
+  const { user, signOut } = useAuth()
+  
+  // Check if admin functionality is enabled
+  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
 
   const navigationItems = [
     { name: 'Home', href: '/' },
@@ -183,7 +184,7 @@ function Header() {
               </nav>
 
               {/* Admin/Auth Section */}
-              {user ? (
+              {user && isAdminEnabled ? (
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/admin"
@@ -207,6 +208,17 @@ function Header() {
                     Sign Out
                   </button>
                 </div>
+              ) : user && !isAdminEnabled ? (
+                <button
+                  onClick={signOut}
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
+                    isHomePage && !scrolled 
+                      ? 'text-white hover:bg-white/10'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  Sign Out
+                </button>
               ) : null}
             </div>
 
@@ -276,7 +288,7 @@ function Header() {
                   
                   {/* Mobile Admin Access */}
                   <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                    {user ? (
+                    {user && isAdminEnabled ? (
                       <div className="space-y-2">
                         <Link
                           to="/admin"
@@ -296,6 +308,16 @@ function Header() {
                           Sign Out
                         </button>
                       </div>
+                    ) : user && !isAdminEnabled ? (
+                      <button
+                        onClick={() => {
+                          signOut()
+                          setIsMenuOpen(false)
+                        }}
+                        className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                      >
+                        Sign Out
+                      </button>
                     ) : null}
                   </div>
                 </div>
