@@ -9,6 +9,7 @@ import ResumePage from './pages/ResumePage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import AdminPage from './pages/AdminPage'
+import AdminLoginPage from './pages/AdminLoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 /**
@@ -25,6 +26,7 @@ function App() {
           <Route path="resume" element={<ResumePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="contact" element={<ContactPage />} />
+          <Route path="admin-login" element={<AdminLoginPage />} />
           <Route 
             path="admin" 
             element={
