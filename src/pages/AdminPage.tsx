@@ -11,8 +11,7 @@ function AdminPage() {
   
   // Security check - redirect if admin is not enabled
   React.useEffect(() => {
-    const adminEnvValue = import.meta.env.VITE_ADMIN_ENABLED
-    if (adminEnvValue !== 'true' && adminEnvValue !== true) {
+    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
       window.location.href = '/'
     }
   }, [])

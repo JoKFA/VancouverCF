@@ -26,8 +26,7 @@ function AdminLoginPage() {
     e.preventDefault()
     
     // Check if admin is enabled
-    const adminEnvValue = import.meta.env.VITE_ADMIN_ENABLED
-    if (adminEnvValue !== 'true' && adminEnvValue !== true) {
+    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
       setError('Admin access is not available in this environment')
       return
     }
