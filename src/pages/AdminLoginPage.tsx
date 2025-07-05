@@ -4,9 +4,6 @@ import { Shield, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 
-/**
- * Hidden admin login page accessible only via direct URL
- */
 function AdminLoginPage() {
   const { user, signIn } = useAuth()
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
@@ -14,14 +11,10 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Redirect if already logged in
   if (user) {
     return <Navigate to="/admin" replace />
   }
 
-  /**
-   * Handle admin login
-   */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -34,7 +27,6 @@ function AdminLoginPage() {
       }
       
       await signIn(loginForm.email, loginForm.password)
-      // Navigation will happen automatically via the auth context
     } catch (error: any) {
       console.error('Login error:', error)
       setError(error.message || 'Invalid credentials. Please check your email and password.')

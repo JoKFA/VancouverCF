@@ -7,9 +7,6 @@ interface AnimatedCounterProps {
   suffix?: string
 }
 
-/**
- * Animated counter component that counts up when in view
- */
 function AnimatedCounter({ end, duration = 2000, suffix = '' }: AnimatedCounterProps) {
   const [count, setCount] = useState(0)
   const { ref, inView } = useInView({

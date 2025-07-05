@@ -4,9 +4,6 @@ import { Plus, Edit, Trash2, Archive, Search, Download, X, User } from 'lucide-r
 import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
-/**
- * Admin dashboard for managing events and viewing resumes
- */
 function AdminPage() {
   const { signOut } = useAuth()
   
@@ -29,9 +26,6 @@ function AdminPage() {
     fetchData()
   }, [])
 
-  /**
-   * Fetch events and resumes data
-   */
   const fetchData = async () => {
     try {
       const [eventsResponse, resumesResponse, teamResponse] = await Promise.all([
@@ -54,9 +48,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Handle event form submission (create/update)
-   */
   const handleEventSubmit = async (formData: FormData) => {
     try {
       const eventData = {
@@ -90,9 +81,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Handle team member form submission (create/update)
-   */
   const handleTeamSubmit = async (formData: FormData) => {
     try {
       let avatarUrl = editingTeamMember?.avatar_url || ''
@@ -147,9 +135,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Delete an event
-   */
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return
 
@@ -167,9 +152,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Delete a team member
-   */
   const handleDeleteTeamMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to delete this team member?')) return
 
@@ -187,9 +169,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Move event to past and upload blog file
-   */
   const handleMoveToPast = async () => {
     if (!movingEvent || !blogFile) return
 
@@ -230,9 +209,6 @@ function AdminPage() {
     }
   }
 
-  /**
-   * Download resume file
-   */
   const downloadResume = (fileUrl: string, fileName: string) => {
     const link = document.createElement('a')
     link.href = fileUrl
@@ -243,18 +219,12 @@ function AdminPage() {
     document.body.removeChild(link)
   }
 
-  /**
-   * Filter resumes based on search term
-   */
   const filteredResumes = resumes.filter(resume =>
     resume.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resume.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resume.phone.includes(searchTerm)
   )
 
-  /**
-   * Format date for display
-   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -274,7 +244,6 @@ function AdminPage() {
   return (
     <div className="section-padding">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
           <button
@@ -285,7 +254,6 @@ function AdminPage() {
           </button>
         </div>
 
-        {/* Tabs */}
         <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
           <button
             onClick={() => setActiveTab('events')}
@@ -319,7 +287,6 @@ function AdminPage() {
           </button>
         </div>
 
-        {/* Events Tab */}
         {activeTab === 'events' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -390,7 +357,6 @@ function AdminPage() {
           </div>
         )}
 
-        {/* Resumes Tab */}
         {activeTab === 'resumes' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -435,7 +401,6 @@ function AdminPage() {
           </div>
         )}
 
-        {/* Team Tab */}
         {activeTab === 'team' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -502,7 +467,6 @@ function AdminPage() {
           </div>
         )}
 
-        {/* Event Modal */}
         {showEventModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -619,7 +583,6 @@ function AdminPage() {
           </div>
         )}
 
-        {/* Team Modal */}
         {showTeamModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -733,7 +696,6 @@ function AdminPage() {
           </div>
         )}
 
-        {/* Move to Past Modal */}
         {showMoveModal && movingEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">

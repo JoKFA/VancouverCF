@@ -4,16 +4,12 @@ import { Menu, X, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 
-/**
- * Enhanced navigation header with improved visibility on all pages
- */
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const { user, signOut } = useAuth()
   
-  // Check if admin functionality is enabled
   const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
 
   const navigationItems = [
@@ -24,7 +20,6 @@ function Header() {
     { name: 'Contact', href: '/contact' },
   ]
 
-  // Check if we're on homepage
   const isHomePage = location.pathname === '/'
 
   useEffect(() => {
@@ -36,37 +31,28 @@ function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  /**
-   * Check if current path matches navigation item
-   */
   const isActivePath = (href: string) => {
     return location.pathname === href
   }
 
-  // Determine header styling based on page and scroll state
   const getHeaderStyles = () => {
     if (isHomePage) {
-      // Homepage: transparent when at top, solid when scrolled
       return scrolled 
         ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-white/20' 
         : 'bg-transparent'
     } else {
-      // Other pages: always solid background for visibility
       return scrolled
         ? 'bg-white/98 backdrop-blur-lg shadow-xl border-b border-purple-100'
         : 'bg-white/90 backdrop-blur-md shadow-lg border-b border-purple-100/50'
     }
   }
 
-  // Determine text colors based on page and scroll state
   const getTextColor = (isActive = false) => {
     if (isHomePage && !scrolled) {
-      // Homepage at top: white text
       return isActive 
         ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
         : 'text-white hover:text-purple-200 hover:bg-white/10'
     } else {
-      // All other cases: dark text
       return isActive
         ? 'text-white bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg'
         : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
@@ -107,7 +93,6 @@ function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            {/* Logo */}
             <Link to="/" className="flex items-center group flex-shrink-0">
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
@@ -130,9 +115,7 @@ function Header() {
               </motion.div>
             </Link>
 
-            {/* Desktop Navigation and Admin Section */}
             <div className="hidden md:flex items-center space-x-6">
-              {/* Navigation */}
               <nav className="flex space-x-6">
                 {navigationItems.map((item, index) => (
                   <motion.div
@@ -161,7 +144,6 @@ function Header() {
                 ))}
               </nav>
 
-              {/* Admin/Auth Section */}
               {isAdminEnabled && user ? (
                 <div className="flex items-center space-x-4">
                   <Link
@@ -202,7 +184,6 @@ function Header() {
               ) : null}
             </div>
 
-            {/* Mobile menu button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
               className={`md:hidden p-3 rounded-xl transition-colors ${getMobileButtonColor()}`}
@@ -234,7 +215,6 @@ function Header() {
             </motion.button>
           </div>
 
-          {/* Mobile Navigation */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
@@ -266,7 +246,6 @@ function Header() {
                     </motion.div>
                   ))}
                   
-                  {/* Mobile Admin Access */}
                   {isAdminEnabled && (
                     <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
                       {user ? (
@@ -284,7 +263,6 @@ function Header() {
                     </div>
                   )}
                   
-                  {/* Sign out for non-admin users when admin is disabled */}
                   {!isAdminEnabled && user && (
                     <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
                       <button

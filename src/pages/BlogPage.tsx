@@ -5,9 +5,6 @@ import { Link } from 'react-router-dom'
 import { supabase, Event } from '../lib/supabase'
 import mammoth from 'mammoth'
 
-/**
- * Blog page that displays event recap content from uploaded Word/PDF files
- */
 function BlogPage() {
   const { eventId } = useParams<{ eventId: string }>()
   const [event, setEvent] = useState<Event | null>(null)
@@ -21,12 +18,8 @@ function BlogPage() {
     }
   }, [eventId])
 
-  /**
-   * Fetch event details and process blog file content
-   */
   const fetchEventAndBlog = async (id: string) => {
     try {
-      // Fetch event details
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
@@ -42,7 +35,6 @@ function BlogPage() {
 
       setEvent(eventData)
 
-      // Fetch and process the blog file
       await processBlogFile(eventData.recap_file_url)
     } catch (error) {
       console.error('Error fetching event:', error)
@@ -52,15 +44,11 @@ function BlogPage() {
     }
   }
 
-  /**
-   * Process uploaded Word/PDF file and convert to HTML
-   */
   const processBlogFile = async (fileUrl: string) => {
     try {
       const response = await fetch(fileUrl)
       const arrayBuffer = await response.arrayBuffer()
       
-      // Check file type and process accordingly
       if (fileUrl.toLowerCase().includes('.docx')) {
         const result = await mammoth.convertToHtml({ arrayBuffer })
         setBlogContent(result.value)
@@ -92,9 +80,6 @@ function BlogPage() {
     }
   }
 
-  /**
-   * Format date string for display
-   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -118,7 +103,6 @@ function BlogPage() {
   return (
     <div className="section-padding">
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
         <Link 
           to="/events" 
           className="inline-flex items-center text-primary-600 hover:text-primary-700 mb-8"
@@ -127,7 +111,6 @@ function BlogPage() {
           Back to Events
         </Link>
 
-        {/* Event Header */}
         <header className="mb-8">
           {event.image_url && (
             <img 
@@ -151,14 +134,12 @@ function BlogPage() {
           </div>
         </header>
 
-        {/* Event Description */}
         <div className="mb-8 p-6 bg-gray-50 rounded-lg">
           <p className="text-gray-700 leading-relaxed">
             {event.description}
           </p>
         </div>
 
-        {/* Blog Content */}
         <article className="prose prose-lg max-w-none">
           <div 
             dangerouslySetInnerHTML={{ __html: blogContent }}

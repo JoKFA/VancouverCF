@@ -4,9 +4,6 @@ import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { supabase, TeamMember } from '../lib/supabase'
 
-/**
- * Contact page with team section and contact information
- */
 function ContactPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,9 +24,6 @@ function ContactPage() {
     fetchTeamMembers()
   }, [])
 
-  /**
-   * Fetch team members from database
-   */
   const fetchTeamMembers = async () => {
     try {
       const { data, error } = await supabase
@@ -46,16 +40,11 @@ function ContactPage() {
     }
   }
 
-  /**
-   * Handle contact form submission
-   */
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormSubmitting(true)
 
     try {
-      // In a real application, you would send this to your backend or email service
-      // For now, we'll just simulate a successful submission
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       setFormSuccess(true)
@@ -220,7 +209,6 @@ function ContactPage() {
                 </div>
               </motion.div>
 
-              {/* Contact Form */}
               <motion.div variants={itemVariants} className="card p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100/50 to-blue-100/50 rounded-full blur-2xl" />
                 
@@ -341,7 +329,6 @@ function ContactPage() {
         </div>
       </section>
 
-      {/* Our Team Section */}
       <section className="bg-gradient-to-br from-gray-50 to-purple-50/50 section-padding relative overflow-hidden">
         <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
         <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />
@@ -431,7 +418,6 @@ function ContactPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 section-padding relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-purple-200/20 to-blue-200/20 rounded-full blur-xl" />
         <div className="absolute bottom-0 right-0 w-48 h-48 bg-gradient-to-br from-orange-200/15 to-purple-200/15 rounded-full blur-2xl" />

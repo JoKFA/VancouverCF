@@ -2,9 +2,6 @@ import { Outlet } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
 
-/**
- * Main layout component that wraps all pages with header and footer
- */
 function Layout() {
   return (
     <div className="min-h-screen flex flex-col">

@@ -3,9 +3,6 @@ import { Upload, CheckCircle, AlertCircle, FileText, User, Mail, Phone, Sparkles
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 
-/**
- * Enhanced resume upload page with purple accents and improved animations
- */
 function ResumePage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,9 +15,6 @@ function ResumePage() {
   const [error, setError] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
-  /**
-   * Handle form input changes
-   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -29,11 +23,7 @@ function ResumePage() {
     }))
   }
 
-  /**
-   * Handle file selection with validation
-   */
   const handleFileChange = (selectedFile: File) => {
-    // Validate file type
     if (selectedFile.type !== 'application/pdf') {
       setError('Please select a PDF file')
       return
@@ -47,9 +37,6 @@ function ResumePage() {
     setError(null)
   }
 
-  /**
-   * Handle drag and drop
-   */
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -70,9 +57,6 @@ function ResumePage() {
     }
   }
 
-  /**
-   * Upload file to Supabase storage
-   */
   const uploadFile = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -91,24 +75,18 @@ function ResumePage() {
     return data.publicUrl
   }
 
-  /**
-   * Handle form submission
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      // Validate form
       if (!formData.name || !formData.email || !formData.phone || !file) {
         throw new Error('Please fill in all fields and select a file')
       }
 
-      // Upload file
       const fileUrl = await uploadFile(file)
 
-      // Save resume data to database
       const { error: dbError } = await supabase
         .from('resumes')
         .insert([
@@ -247,7 +225,6 @@ function ResumePage() {
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-orange-100/30 to-purple-100/30 rounded-full blur-xl" />
                   
                   <form onSubmit={handleSubmit} className="space-y-8 relative">
-                    {/* Personal Information */}
                     <div className="space-y-6">
                       <div className="flex items-center mb-6">
                         <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -327,7 +304,6 @@ function ResumePage() {
                       </motion.div>
                     </div>
 
-                    {/* Enhanced File Upload */}
                     <div>
                       <div className="flex items-center mb-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-purple-100 rounded-lg flex items-center justify-center mr-3">
@@ -391,7 +367,6 @@ function ResumePage() {
                       </motion.div>
                     </div>
 
-                    {/* Error Message */}
                     <AnimatePresence>
                       {error && (
                         <motion.div
@@ -406,7 +381,6 @@ function ResumePage() {
                       )}
                     </AnimatePresence>
 
-                    {/* Enhanced Submit Button */}
                     <motion.button
                       type="submit"
                       disabled={loading}

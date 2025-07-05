@@ -4,32 +4,21 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Please check your environment variables and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
   throw new Error('Missing Supabase environment variables')
 }
 
-// Check for placeholder values
 if (supabaseUrl.includes('your_') || supabaseAnonKey.includes('your_')) {
-  console.error('Placeholder Supabase environment variables detected. Please update with your actual Supabase project credentials.')
   throw new Error('Placeholder Supabase environment variables')
 }
 
-// Validate URL format
 try {
   new URL(supabaseUrl)
 } catch (error) {
-  console.error(`Invalid VITE_SUPABASE_URL format: "${supabaseUrl}"`)
   throw new Error('Invalid Supabase URL format')
 }
 
-/**
- * Supabase client instance for database operations
- */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-/**
- * Database type definitions
- */
 export interface Event {
   id: string
   title: string

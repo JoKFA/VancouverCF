@@ -8,9 +8,6 @@ interface Particle {
   delay: number
 }
 
-/**
- * Animated particle background component
- */
 function ParticleBackground() {
   const [particles, setParticles] = useState<Particle[]>([])
 

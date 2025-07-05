@@ -5,9 +5,6 @@ import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { supabase, Event } from '../lib/supabase'
 
-/**
- * Enhanced events page with improved animations and purple accents
- */
 function EventsPage() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([])
   const [pastEvents, setPastEvents] = useState<Event[]>([])
@@ -18,9 +15,6 @@ function EventsPage() {
     fetchEvents()
   }, [])
 
-  /**
-   * Fetch events from Supabase and categorize by status
-   */
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
@@ -42,9 +36,6 @@ function EventsPage() {
     }
   }
 
-  /**
-   * Format date string for display
-   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -53,9 +44,6 @@ function EventsPage() {
     })
   }
 
-  /**
-   * Enhanced event card component
-   */
   const EventCard = ({ event, index }: { event: Event; index: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -65,7 +53,6 @@ function EventsPage() {
       whileHover={{ y: -12, scale: 1.02 }}
       className="card card-hover group relative overflow-hidden"
     >
-      {/* Decorative elements */}
       <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
       <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-orange-200/20 to-purple-200/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
       
@@ -236,7 +223,6 @@ function EventsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto section-padding">
-        {/* Upcoming Events */}
         <section className="mb-20">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -286,7 +272,6 @@ function EventsPage() {
           )}
         </section>
 
-        {/* Past Events */}
         <section>
           <motion.div
             initial={{ opacity: 0, x: -30 }}
