@@ -10,14 +10,6 @@ import { useAuth } from '../contexts/AuthContext'
 function AdminPage() {
   const { signOut } = useAuth()
   
-  // Check if admin functionality is enabled
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
-  
-  // Redirect to home if admin is disabled
-  if (!isAdminEnabled) {
-    return <Navigate to="/" replace />
-  }
-  
   const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
   const [events, setEvents] = useState<Event[]>([])
   const [resumes, setResumes] = useState<Resume[]>([])

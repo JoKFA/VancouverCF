@@ -21,9 +21,11 @@ function App() {
   // Check if admin functionality is enabled - default to false for security
   const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
   
-  // Debug log to see what the environment variable is set to
-  console.log('VITE_ADMIN_ENABLED:', import.meta.env.VITE_ADMIN_ENABLED)
-  console.log('isAdminEnabled:', isAdminEnabled)
+  // Only log in development
+  if (import.meta.env.DEV) {
+    console.log('VITE_ADMIN_ENABLED:', import.meta.env.VITE_ADMIN_ENABLED)
+    console.log('isAdminEnabled:', isAdminEnabled)
+  }
 
   return (
     <AuthProvider>

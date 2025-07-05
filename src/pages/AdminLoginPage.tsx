@@ -14,14 +14,6 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Check if admin functionality is enabled
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
-  
-  // Redirect to home if admin is disabled
-  if (!isAdminEnabled) {
-    return <Navigate to="/" replace />
-  }
-
   // Redirect if already logged in
   if (user) {
     return <Navigate to="/admin" replace />

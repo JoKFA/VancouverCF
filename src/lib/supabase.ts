@@ -3,9 +3,15 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your_actual') || supabaseAnonKey.includes('your_actual')) {
-  console.error('Missing or placeholder Supabase environment variables. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set with your actual Supabase project credentials.')
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing Supabase environment variables. Please check your environment variables and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
   throw new Error('Missing Supabase environment variables')
+}
+
+// Check for placeholder values
+if (supabaseUrl.includes('your_') || supabaseAnonKey.includes('your_')) {
+  console.error('Placeholder Supabase environment variables detected. Please update with your actual Supabase project credentials.')
+  throw new Error('Placeholder Supabase environment variables')
 }
 
 // Validate URL format
