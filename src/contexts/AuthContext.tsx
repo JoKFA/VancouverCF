@@ -100,34 +100,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     }
   }
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  /**
-   * Sign in user with email and password
-   */
-  const signIn = async (email: string, password: string) => {
-    if (!email || !password) {
-      throw new Error('Email and password are required')
-    }
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-  }
-
-  /**
-   * Sign out current user
-   */
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-  }
 
   const value = {
     user,
