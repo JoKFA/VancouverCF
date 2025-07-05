@@ -127,9 +127,9 @@ function Header() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${getHeaderStyles()}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex items-center h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center group">
+            <Link to="/" className="flex items-center group flex-shrink-0">
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -152,7 +152,7 @@ function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-2">
+            <nav className="hidden md:flex space-x-2 flex-1 justify-center">
               {navigationItems.map((item, index) => (
                 <motion.div
                   key={item.name}
@@ -181,7 +181,7 @@ function Header() {
             </nav>
 
             {/* Admin/Auth Section */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
               {user ? (
                 <div className="flex items-center space-x-4">
                   <Link
@@ -212,7 +212,7 @@ function Header() {
             {/* Mobile menu button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className={`md:hidden p-3 rounded-xl transition-colors ${getMobileButtonColor()}`}
+              className={`md:hidden p-3 rounded-xl transition-colors ml-auto ${getMobileButtonColor()}`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <AnimatePresence mode="wait">
