@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Navigate } from 'react-router-dom'
 import { Plus, Edit, Trash2, Archive, Search, Download, Eye, EyeOff, X, Upload, User } from 'lucide-react'
 import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -9,12 +10,13 @@ import { useAuth } from '../contexts/AuthContext'
 function AdminPage() {
   const { signOut } = useAuth()
   
-  // Security check - redirect if admin is not enabled
-  React.useEffect(() => {
-    if (import.meta.env.VITE_ADMIN_ENABLED !== 'true') {
-      window.location.href = '/'
-    }
-  }, [])
+  // Check if admin functionality is enabled
+  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  
+  // Redirect to home if admin is disabled
+  if (!isAdminEnabled) {
+    return <Navigate to="/" replace />
+  }
   
   const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
   const [events, setEvents] = useState<Event[]>([])

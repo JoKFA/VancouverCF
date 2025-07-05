@@ -170,7 +170,7 @@ function Header() {
               </nav>
 
               {/* Admin/Auth Section */}
-              {user && isAdminEnabled ? (
+              {isAdminEnabled && user ? (
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/admin"
@@ -194,7 +194,9 @@ function Header() {
                     Sign Out
                   </button>
                 </div>
-              ) : user && !isAdminEnabled ? (
+              ) : isAdminEnabled && !user ? (
+                null
+              ) : !isAdminEnabled && user ? (
                 <button
                   onClick={signOut}
                   className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
@@ -273,8 +275,9 @@ function Header() {
                   ))}
                   
                   {/* Mobile Admin Access */}
-                  <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                    {user && isAdminEnabled ? (
+                  {isAdminEnabled && (
+                    <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
+                      {user ? (
                       <div className="space-y-2">
                         <Link
                           to="/admin"
@@ -283,7 +286,13 @@ function Header() {
                         >
                           <Shield size={16} className="mr-2" />
                           Admin Panel
-                        </Link>
+                      ) : null}
+                    </div>
+                  )}
+                  
+                  {/* Sign out for non-admin users when admin is disabled */}
+                  {!isAdminEnabled && user && (
+                    <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
                         <button
                           onClick={() => {
                             signOut()
@@ -304,8 +313,8 @@ function Header() {
                       >
                         Sign Out
                       </button>
-                    ) : null}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
