@@ -278,14 +278,16 @@ function Header() {
                   {isAdminEnabled && (
                     <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
                       {user ? (
-                      <div className="space-y-2">
-                        <Link
-                          to="/admin"
-                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Shield size={16} className="mr-2" />
-                          Admin Panel
+                        <div className="space-y-2">
+                          <Link
+                            to="/admin"
+                            className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Shield size={16} className="mr-2" />
+                            Admin Panel
+                          </Link>
+                        </div>
                       ) : null}
                     </div>
                   )}
@@ -293,17 +295,6 @@ function Header() {
                   {/* Sign out for non-admin users when admin is disabled */}
                   {!isAdminEnabled && user && (
                     <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                        <button
-                          onClick={() => {
-                            signOut()
-                            setIsMenuOpen(false)
-                          }}
-                          className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-                        >
-                          Sign Out
-                        </button>
-                      </div>
-                    ) : user && !isAdminEnabled ? (
                       <button
                         onClick={() => {
                           signOut()
@@ -321,7 +312,6 @@ function Header() {
           </AnimatePresence>
         </div>
       </motion.header>
-
     </>
   )
 }
