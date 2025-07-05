@@ -44,10 +44,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Sign in user with email and password
    */
   const signIn = async (email: string, password: string) => {
-    }).catch((error) => {
-      throw new Error('Email and password are required')
-    })
-    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
