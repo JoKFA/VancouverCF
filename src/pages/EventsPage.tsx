@@ -23,25 +23,12 @@ function EventsPage() {
    */
   const fetchEvents = async () => {
     try {
-      // Check if Supabase is properly configured
-      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
-        console.warn('Supabase not configured, using mock data')
-        setUpcomingEvents([])
-        setPastEvents([])
-        return
-      }
-
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .order('date', { ascending: false })
 
-      if (error) {
-        console.warn('Error fetching events:', error)
-        setUpcomingEvents([])
-        setPastEvents([])
-        return
-      }
+      if (error) throw error
 
       const upcoming = data?.filter(event => event.status === 'upcoming') || []
       const past = data?.filter(event => event.status === 'past') || []
@@ -49,9 +36,7 @@ function EventsPage() {
       setUpcomingEvents(upcoming)
       setPastEvents(past)
     } catch (error) {
-      console.warn('Error fetching events:', error)
-      setUpcomingEvents([])
-      setPastEvents([])
+      console.error('Error fetching events:', error)
     } finally {
       setLoading(false)
     }

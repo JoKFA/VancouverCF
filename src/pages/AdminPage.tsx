@@ -34,46 +34,21 @@ function AdminPage() {
    */
   const fetchData = async () => {
     try {
-      // Check if Supabase is properly configured
-      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
-        console.warn('Supabase not configured, using empty admin data')
-        setEvents([])
-        setResumes([])
-        setTeamMembers([])
-        return
-      }
-
       const [eventsResponse, resumesResponse, teamResponse] = await Promise.all([
         supabase.from('events').select('*').order('created_at', { ascending: false }),
         supabase.from('resumes').select('*').order('created_at', { ascending: false }),
         supabase.from('team_members').select('*').order('order_index', { ascending: true })
       ])
 
-      if (eventsResponse.error) {
-        console.warn('Error fetching events:', eventsResponse.error)
-        setEvents([])
-      } else {
-        setEvents(eventsResponse.data || [])
-      }
+      if (eventsResponse.error) throw eventsResponse.error
+      if (resumesResponse.error) throw resumesResponse.error
+      if (teamResponse.error) throw teamResponse.error
 
-      if (resumesResponse.error) {
-        console.warn('Error fetching resumes:', resumesResponse.error)
-        setResumes([])
-      } else {
-        setResumes(resumesResponse.data || [])
-      }
-
-      if (teamResponse.error) {
-        console.warn('Error fetching team members:', teamResponse.error)
-        setTeamMembers([])
-      } else {
-        setTeamMembers(teamResponse.data || [])
-      }
+      setEvents(eventsResponse.data || [])
+      setResumes(resumesResponse.data || [])
+      setTeamMembers(teamResponse.data || [])
     } catch (error) {
-      console.warn('Error fetching admin data:', error)
-      setEvents([])
-      setResumes([])
-      setTeamMembers([])
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }

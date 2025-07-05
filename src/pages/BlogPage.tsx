@@ -26,13 +26,6 @@ function BlogPage() {
    */
   const fetchEventAndBlog = async (id: string) => {
     try {
-      // Check if Supabase is properly configured
-      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
-        setError('Blog content is not available. Please configure Supabase.')
-        setLoading(false)
-        return
-      }
-
       // Fetch event details
       const { data: eventData, error: eventError } = await supabase
         .from('events')
@@ -40,13 +33,7 @@ function BlogPage() {
         .eq('id', id)
         .single()
 
-      if (eventError) {
-        console.warn('Error fetching event:', eventError)
-        setError('Event not found')
-        setLoading(false)
-        return
-      }
-      
+      if (eventError) throw eventError
       if (!eventData.recap_file_url) {
         setError('No blog content available for this event')
         setLoading(false)
@@ -58,7 +45,7 @@ function BlogPage() {
       // Fetch and process the blog file
       await processBlogFile(eventData.recap_file_url)
     } catch (error) {
-      console.warn('Error fetching event:', error)
+      console.error('Error fetching event:', error)
       setError('Failed to load event content')
     } finally {
       setLoading(false)
