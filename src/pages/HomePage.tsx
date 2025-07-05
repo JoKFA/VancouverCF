@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, Users, Award, FileText, ArrowRight, Sparkles, Star, Heart, Briefcase, TrendingUp, Network } from 'lucide-react'
 import { motion } from 'framer-motion'

@@ -1,4 +1,3 @@
-import React from 'react'
 import { Users, Calendar, Award, Globe, Sparkles, Heart, Star, Target } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Upload, CheckCircle, AlertCircle, FileText, User, Mail, Phone, Sparkles, Star, Heart } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
