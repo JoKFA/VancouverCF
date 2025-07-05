@@ -285,32 +285,27 @@ function Header() {
                   
                   {/* Mobile Admin Access */}
                   <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                    {/* Hidden Admin Access - Only show if user is already authenticated */}
-                    {user && (
-                      <div className="hidden md:flex items-center space-x-4">
+                    {user ? (
+                      <div className="space-y-2">
                         <Link
                           to="/admin"
-                          className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                            isHomePage && !scrolled 
-                              ? 'text-white hover:bg-white/10'
-                              : 'text-purple-600 hover:bg-purple-50'
-                          }`}
+                          className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
+                          onClick={() => setIsMenuOpen(false)}
                         >
                           <Shield size={16} className="mr-2" />
-                          Admin
+                          Admin Panel
                         </Link>
                         <button
-                          onClick={signOut}
-                          className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                            isHomePage && !scrolled 
-                              ? 'text-white hover:bg-white/10'
-                              : 'text-gray-600 hover:bg-gray-100'
-                          }`}
+                          onClick={() => {
+                            signOut()
+                            setIsMenuOpen(false)
+                          }}
+                          className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
                         >
                           Sign Out
                         </button>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </motion.div>
