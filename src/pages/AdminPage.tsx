@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Plus, Edit, Trash2, Archive, Search, Download, Eye, EyeOff, X, Upload, User } from 'lucide-react'
+import { Plus, Edit, Trash2, Archive, Search, Download, X, Upload, User } from 'lucide-react'
 import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 

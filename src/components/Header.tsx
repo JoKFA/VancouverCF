@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Shield } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -86,14 +86,6 @@ function Header() {
       return 'text-white/80'
     } else {
       return 'text-gray-600'
-    }
-  }
-
-  const getButtonColor = () => {
-    if (isHomePage && !scrolled) {
-      return 'text-white hover:bg-white/10 border border-white/30'
-    } else {
-      return 'text-purple-600 hover:bg-purple-50 border border-purple-200'
     }
   }
 
