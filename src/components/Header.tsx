@@ -13,8 +13,9 @@ function Header() {
   const location = useLocation()
   const { user, signOut } = useAuth()
   
-  // Check if admin functionality is enabled
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  // Check if admin functionality is enabled - more robust checking
+  const adminEnvValue = import.meta.env.VITE_ADMIN_ENABLED
+  const isAdminEnabled = adminEnvValue === 'true' || adminEnvValue === true
 
   const navigationItems = [
     { name: 'Home', href: '/' },

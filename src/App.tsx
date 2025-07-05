@@ -18,8 +18,13 @@ const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'))
  * Main application component that sets up routing and authentication context
  */
 function App() {
-  // Check if admin functionality is enabled
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  // Check if admin functionality is enabled - more robust checking
+  const adminEnvValue = import.meta.env.VITE_ADMIN_ENABLED
+  const isAdminEnabled = adminEnvValue === 'true' || adminEnvValue === true
+  
+  // Debug logging (remove in production)
+  console.log('VITE_ADMIN_ENABLED:', adminEnvValue, 'Type:', typeof adminEnvValue)
+  console.log('isAdminEnabled:', isAdminEnabled)
 
   return (
     <AuthProvider>
