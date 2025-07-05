@@ -3,18 +3,41 @@ import { Upload, CheckCircle, AlertCircle, FileText, User, Mail, Phone, Sparkles
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 
+/**
+ * Resume Submission Page
+ * Allows job seekers to submit their resumes for career fair opportunities
+ * 
+ * Features:
+ * - Personal information form (name, email, phone)
+ * - PDF file upload with drag & drop
+ * - File validation (PDF only, 5MB max)
+ * - Upload to Supabase storage
+ * - Success confirmation with animation
+ * 
+ * File Storage: Resumes are stored in the 'resumes' bucket in Supabase storage
+ * Database: Resume metadata is saved to the 'resumes' table
+ */
 function ResumePage() {
+  // Form data state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: ''
   })
+  
+  // File upload state
   const [file, setFile] = useState<File | null>(null)
+  const [dragActive, setDragActive] = useState(false)
+  
+  // UI state
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [dragActive, setDragActive] = useState(false)
 
+  /**
+   * Handle form input changes
+   * Updates form data state when user types in input fields
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -23,20 +46,31 @@ function ResumePage() {
     }))
   }
 
+  /**
+   * Handle file selection with validation
+   * Validates file type (PDF only) and size (5MB max)
+   */
   const handleFileChange = (selectedFile: File) => {
+    // Validate file type - only PDF files allowed
     if (selectedFile.type !== 'application/pdf') {
       setError('Please select a PDF file')
       return
     }
-    // Validate file size (5MB limit)
+    
+    // Validate file size - 5MB maximum
     if (selectedFile.size > 5 * 1024 * 1024) {
       setError('File size must be less than 5MB')
       return
     }
+    
     setFile(selectedFile)
     setError(null)
   }
 
+  /**
+   * Handle drag and drop events
+   * Provides visual feedback during drag operations
+   */
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -47,6 +81,10 @@ function ResumePage() {
     }
   }
 
+  /**
+   * Handle file drop
+   * Processes dropped files and validates them
+   */
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -57,6 +95,11 @@ function ResumePage() {
     }
   }
 
+  /**
+   * Upload file to Supabase storage
+   * Generates unique filename and uploads to 'resumes' bucket
+   * Returns the public URL of the uploaded file
+   */
   const uploadFile = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -75,18 +118,25 @@ function ResumePage() {
     return data.publicUrl
   }
 
+  /**
+   * Handle form submission
+   * Validates form data, uploads file, and saves to database
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
+      // Validate all required fields
       if (!formData.name || !formData.email || !formData.phone || !file) {
         throw new Error('Please fill in all fields and select a file')
       }
 
+      // Upload file to storage
       const fileUrl = await uploadFile(file)
 
+      // Save resume data to database
       const { error: dbError } = await supabase
         .from('resumes')
         .insert([
@@ -100,6 +150,7 @@ function ResumePage() {
 
       if (dbError) throw dbError
 
+      // Reset form and show success message
       setSuccess(true)
       setFormData({ name: '', email: '', phone: '' })
       setFile(null)
@@ -122,6 +173,7 @@ function ResumePage() {
         <div className="max-w-2xl mx-auto">
           <AnimatePresence mode="wait">
             {success ? (
+              // Success state - shown after successful submission
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -131,7 +183,6 @@ function ResumePage() {
                 className="text-center"
               >
                 <div className="card p-12 relative overflow-hidden">
-                  {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full blur-2xl" />
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full blur-xl" />
                   
@@ -176,6 +227,7 @@ function ResumePage() {
                 </div>
               </motion.div>
             ) : (
+              // Form state - main resume submission form
               <motion.div
                 key="form"
                 initial={{ opacity: 0, y: 20 }}
@@ -183,7 +235,7 @@ function ResumePage() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                {/* Enhanced Header */}
+                {/* Page header */}
                 <div className="text-center mb-12">
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -213,18 +265,18 @@ function ResumePage() {
                   </motion.div>
                 </div>
 
-                {/* Enhanced Form */}
+                {/* Main form */}
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                   className="card p-8 relative overflow-hidden"
                 >
-                  {/* Decorative elements */}
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100/50 to-blue-100/50 rounded-full blur-2xl" />
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-orange-100/30 to-purple-100/30 rounded-full blur-xl" />
                   
                   <form onSubmit={handleSubmit} className="space-y-8 relative">
+                    {/* Personal information section */}
                     <div className="space-y-6">
                       <div className="flex items-center mb-6">
                         <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -236,6 +288,7 @@ function ResumePage() {
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Name field */}
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.2 }}
@@ -258,6 +311,7 @@ function ResumePage() {
                           </div>
                         </motion.div>
 
+                        {/* Phone field */}
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           transition={{ duration: 0.2 }}
@@ -281,6 +335,7 @@ function ResumePage() {
                         </motion.div>
                       </div>
 
+                      {/* Email field */}
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         transition={{ duration: 0.2 }}
@@ -304,6 +359,7 @@ function ResumePage() {
                       </motion.div>
                     </div>
 
+                    {/* File upload section */}
                     <div>
                       <div className="flex items-center mb-4">
                         <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-purple-100 rounded-lg flex items-center justify-center mr-3">
@@ -313,6 +369,8 @@ function ResumePage() {
                           Resume (PDF only, max 5MB) *
                         </label>
                       </div>
+                      
+                      {/* Drag and drop file upload area */}
                       <motion.div
                         whileHover={{ scale: 1.01 }}
                         className={`relative border-2 border-dashed rounded-2xl transition-all duration-300 ${
@@ -367,6 +425,7 @@ function ResumePage() {
                       </motion.div>
                     </div>
 
+                    {/* Error message display */}
                     <AnimatePresence>
                       {error && (
                         <motion.div
@@ -381,6 +440,7 @@ function ResumePage() {
                       )}
                     </AnimatePresence>
 
+                    {/* Submit button */}
                     <motion.button
                       type="submit"
                       disabled={loading}

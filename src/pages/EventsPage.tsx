@@ -5,16 +5,39 @@ import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { supabase, Event } from '../lib/supabase'
 
+/**
+ * Events Page Component
+ * Displays upcoming and past career fair events
+ * 
+ * Features:
+ * - Fetches events from database and categorizes by status
+ * - Displays upcoming events with registration info
+ * - Shows past events with links to blog recaps
+ * - Responsive grid layout with animations
+ * - Loading states and empty states
+ * 
+ * Event Status:
+ * - 'upcoming': Shows in upcoming section with registration info
+ * - 'past': Shows in past section with blog recap links (if available)
+ */
 function EventsPage() {
+  // State for categorized events
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([])
   const [pastEvents, setPastEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Animation hooks for scroll-triggered animations
   const [headerRef, headerInView] = useInView({ threshold: 0.3, triggerOnce: true })
 
+  // Load events when component mounts
   useEffect(() => {
     fetchEvents()
   }, [])
 
+  /**
+   * Fetch events from database and categorize by status
+   * Separates events into upcoming and past arrays for display
+   */
   const fetchEvents = async () => {
     try {
       const { data, error } = await supabase
@@ -24,6 +47,7 @@ function EventsPage() {
 
       if (error) throw error
 
+      // Separate events by status
       const upcoming = data?.filter(event => event.status === 'upcoming') || []
       const past = data?.filter(event => event.status === 'past') || []
 
@@ -36,6 +60,10 @@ function EventsPage() {
     }
   }
 
+  /**
+   * Format date string for display
+   * Converts ISO date string to readable format
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -44,6 +72,11 @@ function EventsPage() {
     })
   }
 
+  /**
+   * Event Card Component
+   * Reusable card component for displaying individual events
+   * Handles both upcoming and past events with different styling
+   */
   const EventCard = ({ event, index }: { event: Event; index: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -53,10 +86,12 @@ function EventsPage() {
       whileHover={{ y: -12, scale: 1.02 }}
       className="card card-hover group relative overflow-hidden"
     >
+      {/* Decorative background elements */}
       <div className="absolute top-4 right-4 w-20 h-20 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
       <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-orange-200/20 to-purple-200/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
       
       <div className="relative overflow-hidden">
+        {/* Event image or placeholder */}
         {event.image_url ? (
           <div className="relative h-48 overflow-hidden">
             <img 
@@ -89,6 +124,7 @@ function EventsPage() {
             </div>
           </div>
         ) : (
+          // Placeholder for events without images
           <div className="h-48 bg-gradient-to-br from-purple-500 via-blue-500 to-orange-500 flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20" />
             <Calendar size={48} className="text-white/70 relative z-10" />
@@ -98,6 +134,7 @@ function EventsPage() {
         )}
       </div>
 
+      {/* Event content */}
       <div className="p-6 relative">
         <motion.h3 
           className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300"
@@ -106,6 +143,7 @@ function EventsPage() {
           {event.title}
         </motion.h3>
         
+        {/* Event details */}
         <div className="space-y-3 mb-4">
           <motion.div 
             className="flex items-center text-gray-600"
@@ -131,6 +169,7 @@ function EventsPage() {
           {event.description}
         </p>
 
+        {/* Action buttons based on event status */}
         {event.status === 'past' && event.recap_file_url && (
           <Link 
             to={`/events/${event.id}`}
@@ -164,6 +203,7 @@ function EventsPage() {
     </motion.div>
   )
 
+  // Show loading spinner while fetching data
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -178,7 +218,7 @@ function EventsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 pt-20">
-      {/* Enhanced Header Section */}
+      {/* Page header */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-600 to-orange-500" />
         <div className="absolute inset-0 bg-black/20" />
@@ -223,6 +263,7 @@ function EventsPage() {
       </section>
 
       <div className="max-w-7xl mx-auto section-padding">
+        {/* Upcoming Events Section */}
         <section className="mb-20">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -249,6 +290,7 @@ function EventsPage() {
               ))}
             </div>
           ) : (
+            // Empty state for upcoming events
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -272,6 +314,7 @@ function EventsPage() {
           )}
         </section>
 
+        {/* Past Events Section */}
         <section>
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -298,6 +341,7 @@ function EventsPage() {
               ))}
             </div>
           ) : (
+            // Empty state for past events
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}

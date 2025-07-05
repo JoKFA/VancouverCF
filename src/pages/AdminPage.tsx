@@ -4,28 +4,58 @@ import { Plus, Edit, Trash2, Archive, Search, Download, X, User } from 'lucide-r
 import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
+/**
+ * Admin Dashboard Component
+ * Main admin interface for managing all content
+ * 
+ * Features:
+ * - Event management (create, edit, delete, move to past)
+ * - Resume review and download
+ * - Team member management
+ * - File uploads for event recaps and team avatars
+ * 
+ * Access: Only available to authenticated users when admin is enabled
+ */
 function AdminPage() {
   const { signOut } = useAuth()
   
+  // Tab state management
   const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
+  
+  // Data state
   const [events, setEvents] = useState<Event[]>([])
   const [resumes, setResumes] = useState<Resume[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Modal state for events
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  
+  // Modal state for team members
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [editingTeamMember, setEditingTeamMember] = useState<TeamMember | null>(null)
+  
+  // Resume search functionality
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // Move event to past functionality
   const [showMoveModal, setShowMoveModal] = useState(false)
   const [movingEvent, setMovingEvent] = useState<Event | null>(null)
   const [blogFile, setBlogFile] = useState<File | null>(null)
+  
+  // File upload state
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
 
+  // Load all data when component mounts
   useEffect(() => {
     fetchData()
   }, [])
 
+  /**
+   * Fetch all data from database
+   * Loads events, resumes, and team members
+   */
   const fetchData = async () => {
     try {
       const [eventsResponse, resumesResponse, teamResponse] = await Promise.all([
@@ -48,6 +78,10 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Handle event form submission (create or update)
+   * Processes form data and saves to database
+   */
   const handleEventSubmit = async (formData: FormData) => {
     try {
       const eventData = {
@@ -60,12 +94,14 @@ function AdminPage() {
       }
 
       if (editingEvent) {
+        // Update existing event
         const { error } = await supabase
           .from('events')
           .update(eventData)
           .eq('id', editingEvent.id)
         if (error) throw error
       } else {
+        // Create new event
         const { error } = await supabase
           .from('events')
           .insert([eventData])
@@ -81,11 +117,15 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Handle team member form submission (create or update)
+   * Includes avatar file upload to storage
+   */
   const handleTeamSubmit = async (formData: FormData) => {
     try {
       let avatarUrl = editingTeamMember?.avatar_url || ''
 
-      // Upload avatar if provided
+      // Upload avatar file if provided
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop()
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -113,12 +153,14 @@ function AdminPage() {
       }
 
       if (editingTeamMember) {
+        // Update existing team member
         const { error } = await supabase
           .from('team_members')
           .update(teamData)
           .eq('id', editingTeamMember.id)
         if (error) throw error
       } else {
+        // Create new team member
         const { error } = await supabase
           .from('team_members')
           .insert([teamData])
@@ -135,6 +177,10 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Delete an event from the database
+   * Includes confirmation dialog for safety
+   */
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return
 
@@ -152,6 +198,10 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Delete a team member from the database
+   * Includes confirmation dialog for safety
+   */
   const handleDeleteTeamMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to delete this team member?')) return
 
@@ -169,11 +219,15 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Move event from upcoming to past status
+   * Uploads blog/recap file and updates event status
+   */
   const handleMoveToPast = async () => {
     if (!movingEvent || !blogFile) return
 
     try {
-      // Upload blog file
+      // Upload blog file to storage
       const fileExt = blogFile.name.split('.').pop()
       const fileName = `${Date.now()}-${movingEvent.id}.${fileExt}`
       const filePath = `blogs/${fileName}`
@@ -209,6 +263,10 @@ function AdminPage() {
     }
   }
 
+  /**
+   * Download resume file
+   * Creates a download link and triggers download
+   */
   const downloadResume = (fileUrl: string, fileName: string) => {
     const link = document.createElement('a')
     link.href = fileUrl
@@ -219,12 +277,20 @@ function AdminPage() {
     document.body.removeChild(link)
   }
 
+  /**
+   * Filter resumes based on search term
+   * Searches name, email, and phone fields
+   */
   const filteredResumes = resumes.filter(resume =>
     resume.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resume.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resume.phone.includes(searchTerm)
   )
 
+  /**
+   * Format date for display
+   * Converts ISO date string to readable format
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -233,6 +299,7 @@ function AdminPage() {
     })
   }
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -244,6 +311,7 @@ function AdminPage() {
   return (
     <div className="section-padding">
       <div className="max-w-7xl mx-auto">
+        {/* Admin header with sign out button */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
           <button
@@ -254,6 +322,7 @@ function AdminPage() {
           </button>
         </div>
 
+        {/* Tab navigation */}
         <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
           <button
             onClick={() => setActiveTab('events')}
@@ -287,6 +356,7 @@ function AdminPage() {
           </button>
         </div>
 
+        {/* Events management tab */}
         {activeTab === 'events' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -357,6 +427,7 @@ function AdminPage() {
           </div>
         )}
 
+        {/* Resume management tab */}
         {activeTab === 'resumes' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -401,6 +472,7 @@ function AdminPage() {
           </div>
         )}
 
+        {/* Team management tab */}
         {activeTab === 'team' && (
           <div>
             <div className="flex justify-between items-center mb-6">
@@ -467,6 +539,7 @@ function AdminPage() {
           </div>
         )}
 
+        {/* Event creation/editing modal */}
         {showEventModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -583,6 +656,7 @@ function AdminPage() {
           </div>
         )}
 
+        {/* Team member creation/editing modal */}
         {showTeamModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -696,6 +770,7 @@ function AdminPage() {
           </div>
         )}
 
+        {/* Move event to past modal */}
         {showMoveModal && movingEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">

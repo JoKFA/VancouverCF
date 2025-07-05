@@ -5,9 +5,22 @@ interface ProtectedRouteProps {
   children: React.ReactNode
 }
 
+/**
+ * Protected Route Component
+ * Ensures only authenticated users can access admin pages
+ * 
+ * Usage: Wrap any component that requires authentication
+ * Example: <ProtectedRoute><AdminPage /></ProtectedRoute>
+ * 
+ * Behavior:
+ * - If user is authenticated: renders the child component
+ * - If user is not authenticated: redirects to admin login page
+ * - While loading: shows loading spinner
+ */
 function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   
+  // Show loading spinner while checking authentication status
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -16,10 +29,12 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
+  // Redirect to login if user is not authenticated
   if (!user) {
     return <Navigate to="/admin-login" replace />
   }
 
+  // User is authenticated, render the protected content
   return <>{children}</>
 }
 
