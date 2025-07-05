@@ -26,6 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
+    }).catch((error) => {
+      console.warn('Auth session error:', error)
+      setLoading(false)
     })
 
     // Listen for auth changes
@@ -34,6 +37,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Handle subscription errors gracefully
+    subscription.unsubscribe = ((originalUnsubscribe) => () => {
+      try {
+        originalUnsubscribe()
+      } catch (error) {
+        console.warn('Auth unsubscribe error:', error)
+      }
+    })(subscription.unsubscribe)
+
+    return () => {
+      try {
+        subscription.unsubscribe()
+      } catch (error) {
+        console.warn('Auth cleanup error:', error)
+      }
+    }
+  }, [])
+
+  /**
+   * Sign in user with email and password
+   */
+  const signIn = async (email: string, password: string) => {
+    if (!email || !password) {
+      throw new Error('Email and password are required')
+    }
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+    } catch (error: any) {
+      // Handle network or configuration errors gracefully
+      if (error.message?.includes('fetch')) {
+        throw new Error('Unable to connect to authentication service. Please check your internet connection.')
+      }
+      throw error
+    }
+  }
+
+  /**
+   * Sign out current user
+   */
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error: any) {
+      // Handle network errors gracefully
+      if (error.message?.includes('fetch')) {
+        console.warn('Sign out error:', error)
+        // Clear local session even if server request fails
+        setSession(null)
+        setUser(null)
+        return
+      }
+      throw error
+    }
+  }
       setLoading(false)
     })
 

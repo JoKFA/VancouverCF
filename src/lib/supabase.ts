@@ -3,29 +3,50 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
+// More graceful handling of missing environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Missing Supabase environment variables. Please check your environment variables and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.')
-  throw new Error('Missing Supabase environment variables')
+  if (import.meta.env.DEV) {
+    console.warn('Missing Supabase environment variables. Some features may not work.')
+  }
+  // Create a dummy client that won't crash the app
+  export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+    auth: { persistSession: false }
+  })
+} else {
+  // Check for placeholder values
+  if (supabaseUrl.includes('your_') || supabaseAnonKey.includes('your_')) {
+    if (import.meta.env.DEV) {
+      console.warn('Placeholder Supabase environment variables detected. Please update with your actual Supabase project credentials.')
+    }
+    // Create a dummy client for development
+    export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+      auth: { persistSession: false }
+    })
+  } else {
+    // Validate URL format
+    try {
+      new URL(supabaseUrl)
+      // Create the real client
+      export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+        },
+        db: {
+          schema: 'public'
+        }
+      })
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error(`Invalid VITE_SUPABASE_URL format: "${supabaseUrl}"`)
+      }
+      // Create a dummy client
+      export const supabase = createClient('https://dummy.supabase.co', 'dummy-key', {
+        auth: { persistSession: false }
+      })
+    }
+  }
 }
-
-// Check for placeholder values
-if (supabaseUrl.includes('your_') || supabaseAnonKey.includes('your_')) {
-  console.error('Placeholder Supabase environment variables detected. Please update with your actual Supabase project credentials.')
-  throw new Error('Placeholder Supabase environment variables')
-}
-
-// Validate URL format
-try {
-  new URL(supabaseUrl)
-} catch (error) {
-  console.error(`Invalid VITE_SUPABASE_URL format: "${supabaseUrl}"`)
-  throw new Error('Invalid Supabase URL format')
-}
-
-/**
- * Supabase client instance for database operations
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 /**
  * Database type definitions

@@ -18,13 +18,31 @@ cd vancouver-career-fair
 # Install dependencies
 npm install
 
-# Set up environment variables
+# Set up environment variables (optional for basic development)
 cp .env.example .env
-# Edit .env with your Supabase credentials
+# Edit .env with your Supabase credentials (or leave empty for demo mode)
 
 # Start development server
 npm run dev
 ```
+
+### Running Without Database
+
+The app can run without Supabase for development/demo purposes:
+
+```bash
+# Install and run without environment variables
+npm install
+npm run dev
+```
+
+Features available without database:
+- ✅ All pages load correctly
+- ✅ UI components and animations work
+- ✅ Responsive design testing
+- ❌ Data fetching (shows empty states)
+- ❌ Authentication
+- ❌ File uploads
 
 ## 🌐 Deployment
 

@@ -32,15 +32,28 @@ function ContactPage() {
    */
   const fetchTeamMembers = async () => {
     try {
+      // Check if Supabase is properly configured
+      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
+        console.warn('Supabase not configured, using empty team data')
+        setTeamMembers([])
+        return
+      }
+
       const { data, error } = await supabase
         .from('team_members')
         .select('*')
         .order('order_index', { ascending: true })
 
-      if (error) throw error
+      if (error) {
+        console.warn('Error fetching team members:', error)
+        setTeamMembers([])
+        return
+      }
+      
       setTeamMembers(data || [])
     } catch (error) {
-      console.error('Error fetching team members:', error)
+      console.warn('Error fetching team members:', error)
+      setTeamMembers([])
     } finally {
       setLoading(false)
     }

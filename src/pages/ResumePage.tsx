@@ -74,6 +74,11 @@ function ResumePage() {
    * Upload file to Supabase storage
    */
   const uploadFile = async (file: File): Promise<string> => {
+    // Check if Supabase is properly configured
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
+      throw new Error('File upload is not available. Please configure Supabase.')
+    }
+
     const fileExt = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
     const filePath = `resumes/${fileName}`
@@ -103,6 +108,11 @@ function ResumePage() {
       // Validate form
       if (!formData.name || !formData.email || !formData.phone || !file) {
         throw new Error('Please fill in all fields and select a file')
+      }
+
+      // Check if Supabase is properly configured
+      if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('dummy')) {
+        throw new Error('Resume submission is not available. Please configure Supabase.')
       }
 
       // Upload file
