@@ -40,6 +40,20 @@ function Header() {
     return location.pathname === href
   }
 
+  /**
+   * Handle admin login
+   */
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await signIn(loginForm.email, loginForm.password)
+      setShowLoginModal(false)
+      setLoginForm({ email: '', password: '' })
+    } catch (error) {
+      alert('Login failed. Please check your credentials.')
+    }
+  }
+
   // Determine header styling based on page and scroll state
   const getHeaderStyles = () => {
     if (isHomePage) {
@@ -141,15 +155,11 @@ function Header() {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${getTextColor(isActivePath(item.href))}`}
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
+                    isActivePath(item.href) ? getTextColor(true) : getTextColor()
+                  }`}
                 >
                   {item.name}
-                  {isActivePath(item.href) && (
-                    <motion.div
-                      layoutId="navigation-underline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-current"
-                    />
-                  )}
                 </Link>
               ))}
             </nav>
