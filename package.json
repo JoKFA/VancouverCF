@@ -6,11 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:staging": "tsc && vite build --mode staging",
-    "build:production": "tsc && vite build --mode production",
     "preview": "vite preview",
-    "deploy:staging": "vercel --env VITE_ADMIN_ENABLED=true",
-    "deploy:production": "vercel --prod --env VITE_ADMIN_ENABLED=false",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit"
   },
