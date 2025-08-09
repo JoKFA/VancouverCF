@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Shield } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuth } from '../contexts/AuthContext'
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
-  const { user, signOut } = useAuth()
-  
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
+  // Remove unused auth variables since admin access is now hidden
 
   const navigationItems = [
     { name: 'Home', href: '/' },
@@ -144,44 +141,6 @@ function Header() {
                 ))}
               </nav>
 
-              {isAdminEnabled && user ? (
-                <div className="flex items-center space-x-4">
-                  <Link
-                    to="/admin"
-                    className={`flex items-center px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                      isHomePage && !scrolled 
-                        ? 'text-white hover:bg-white/10'
-                        : 'text-purple-600 hover:bg-purple-50'
-                    }`}
-                  >
-                    <Shield size={16} className="mr-2" />
-                    Admin
-                  </Link>
-                  <button
-                    onClick={signOut}
-                    className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                      isHomePage && !scrolled 
-                        ? 'text-white hover:bg-white/10'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : isAdminEnabled && !user ? (
-                null
-              ) : !isAdminEnabled && user ? (
-                <button
-                  onClick={signOut}
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-xl ${
-                    isHomePage && !scrolled 
-                      ? 'text-white hover:bg-white/10'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Sign Out
-                </button>
-              ) : null}
             </div>
 
             <motion.button
@@ -245,37 +204,6 @@ function Header() {
                       </Link>
                     </motion.div>
                   ))}
-                  
-                  {isAdminEnabled && (
-                    <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                      {user ? (
-                        <div className="space-y-2">
-                          <Link
-                            to="/admin"
-                            className="flex items-center px-4 py-3 text-base font-semibold text-purple-600 hover:bg-purple-50 rounded-xl"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <Shield size={16} className="mr-2" />
-                            Admin Panel
-                          </Link>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                  
-                  {!isAdminEnabled && user && (
-                    <div className="border-t border-gray-200 mt-4 pt-4 mx-2">
-                      <button
-                        onClick={() => {
-                          signOut()
-                          setIsMenuOpen(false)
-                        }}
-                        className="w-full text-left px-4 py-3 text-base font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             )}
