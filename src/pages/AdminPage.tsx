@@ -45,6 +45,7 @@ function AdminPage() {
   
   // File upload state
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null)
 
   // Load all data when component mounts
   useEffect(() => {
@@ -79,16 +80,37 @@ function AdminPage() {
 
   /**
    * Handle event form submission (create or update)
-   * Processes form data and saves to database
+   * Processes form data, uploads image if provided, and saves to database
    */
   const handleEventSubmit = async (formData: FormData) => {
     try {
+      let imageUrl = editingEvent?.image_url || formData.get('image_url') as string || ''
+
+      // Upload image file if provided
+      if (eventImageFile) {
+        const fileExt = eventImageFile.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `event-images/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(filePath, eventImageFile)
+
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(filePath)
+
+        imageUrl = data.publicUrl
+      }
+
       const eventData = {
         title: formData.get('title') as string,
         date: formData.get('date') as string,
         location: formData.get('location') as string,
         description: formData.get('description') as string,
-        image_url: formData.get('image_url') as string,
+        image_url: imageUrl,
         status: formData.get('status') as 'upcoming' | 'past'
       }
 
@@ -110,6 +132,7 @@ function AdminPage() {
       await fetchData()
       setShowEventModal(false)
       setEditingEvent(null)
+      setEventImageFile(null)
     } catch (error) {
       console.error('Error saving event:', error)
       alert('Failed to save event')
@@ -550,6 +573,7 @@ function AdminPage() {
                   onClick={() => {
                     setShowEventModal(false)
                     setEditingEvent(null)
+                    setEventImageFile(null)
                   }}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
@@ -611,14 +635,52 @@ function AdminPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL
+                      Event Image
                     </label>
-                    <input
-                      type="url"
-                      name="image_url"
-                      defaultValue={editingEvent?.image_url || ''}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    />
+                    <div className="space-y-4">
+                      {/* File upload option */}
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">
+                          Upload Image File
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setEventImageFile(e.target.files?.[0] || null)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </div>
+                      
+                      {/* URL option as fallback */}
+                      <div>
+                        <label className="block text-sm text-gray-600 mb-2">
+                          Or enter Image URL
+                        </label>
+                        <input
+                          type="url"
+                          name="image_url"
+                          defaultValue={editingEvent?.image_url || ''}
+                          placeholder="https://example.com/image.jpg"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </div>
+                      
+                      {/* Preview current image if editing */}
+                      {editingEvent?.image_url && (
+                        <div className="mt-2">
+                          <p className="text-sm text-gray-600 mb-2">Current image:</p>
+                          <img
+                            src={editingEvent.image_url}
+                            alt="Current event image"
+                            className="w-32 h-24 object-cover rounded-lg border border-gray-200"
+                          />
+                        </div>
+                      )}
+                      
+                      <p className="text-xs text-gray-500">
+                        Upload a new image file to replace the current image, or leave both fields empty for no image.
+                      </p>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -641,6 +703,7 @@ function AdminPage() {
                     onClick={() => {
                       setShowEventModal(false)
                       setEditingEvent(null)
+                      setEventImageFile(null)
                     }}
                     className="btn-secondary"
                   >
