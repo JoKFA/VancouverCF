@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { supabase, Event, EventRecap, ContentBlock } from '../../lib/supabase'
 import { EventMigrationService } from '../../lib/migration'
+import { ContentBlockEditor } from './ContentBlockEditor'
 
 interface EventRecapManagerProps {
   onClose?: () => void
@@ -29,6 +30,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
   const [selectedRecap, setSelectedRecap] = useState<EventRecap | null>(null)
   const [loading, setLoading] = useState(true)
   const [migrationLoading, setMigrationLoading] = useState(false)
+  const [editingBlock, setEditingBlock] = useState<ContentBlock | null>(null)
 
   useEffect(() => {
     loadData()
@@ -127,6 +129,76 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
 
   const getRecapForEvent = (eventId: string) => {
     return recaps.find(recap => recap.event_id === eventId)
+  }
+
+  const handleEditBlock = (block: ContentBlock) => {
+    setEditingBlock(block)
+  }
+
+  const handleSaveBlock = async (updatedBlock: ContentBlock) => {
+    if (!selectedRecap) return
+
+    try {
+      // Update the content block in the recap
+      const updatedBlocks = selectedRecap.content_blocks.map(block =>
+        block.id === updatedBlock.id ? updatedBlock : block
+      )
+
+      const { error } = await supabase
+        .from('event_recaps')
+        .update({ content_blocks: updatedBlocks })
+        .eq('id', selectedRecap.id)
+
+      if (error) throw error
+
+      // Update local state
+      await loadData()
+      setEditingBlock(null)
+      
+      // Update selected recap
+      if (selectedEvent) {
+        const updatedRecap = getRecapForEvent(selectedEvent.id)
+        setSelectedRecap(updatedRecap || null)
+      }
+    } catch (error) {
+      console.error('Error updating content block:', error)
+      alert('Failed to update content block')
+    }
+  }
+
+  const handleDeleteBlock = async (blockId: string) => {
+    if (!selectedRecap) return
+    if (!confirm('Are you sure you want to delete this content block?')) return
+
+    try {
+      // Remove the content block from the recap
+      const updatedBlocks = selectedRecap.content_blocks.filter(block => block.id !== blockId)
+
+      const { error } = await supabase
+        .from('event_recaps')
+        .update({ content_blocks: updatedBlocks })
+        .eq('id', selectedRecap.id)
+
+      if (error) throw error
+
+      // Update local state
+      await loadData()
+      setEditingBlock(null)
+      
+      // Update selected recap
+      if (selectedEvent) {
+        const updatedRecap = getRecapForEvent(selectedEvent.id)
+        setSelectedRecap(updatedRecap || null)
+      }
+    } catch (error) {
+      console.error('Error deleting content block:', error)
+      alert('Failed to delete content block')
+    }
+  }
+
+  const startEditingRecap = () => {
+    // TODO: Implement recap info editing (title, summary, etc.)
+    alert('Recap info editing coming soon! For now, you can edit individual content blocks.')
   }
 
   if (loading) {
@@ -279,26 +351,34 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                       {selectedRecap.content_blocks?.map((block: ContentBlock, index: number) => {
                         const IconComponent = getContentBlockIcon(block.type)
                         return (
-                          <div key={block.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                          <motion.div
+                            key={block.id}
+                            whileHover={{ scale: 1.02 }}
+                            className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors group"
+                            onClick={() => handleEditBlock(block)}
+                          >
                             <IconComponent size={16} className="text-purple-600 mr-3" />
                             <div className="flex-1">
                               <span className="font-medium text-sm capitalize">{block.type.replace('_', ' ')}</span>
                               <span className="text-gray-500 text-xs ml-2">#{index + 1}</span>
                             </div>
-                          </div>
+                            <Edit size={14} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
+                          </motion.div>
                         )
                       })}
                     </div>
+                    <p className="text-sm text-gray-500 mt-2">Click on any block to edit its content</p>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      onClick={startEditingRecap}
                       className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                     >
                       <Edit size={16} className="mr-2" />
-                      Edit Recap
+                      Edit Recap Info
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.05 }}
@@ -411,6 +491,16 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
           </div>
         </div>
       </div>
+
+      {/* Content Block Editor Modal */}
+      {editingBlock && (
+        <ContentBlockEditor
+          block={editingBlock}
+          onSave={handleSaveBlock}
+          onCancel={() => setEditingBlock(null)}
+          onDelete={() => handleDeleteBlock(editingBlock.id)}
+        />
+      )}
     </div>
   )
 }
