@@ -17,16 +17,12 @@ const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'))
 
 /**
  * Main Application Component
- * Sets up routing, authentication context, and conditional admin access
+ * Sets up routing, authentication context, and admin access
  * 
- * Environment-based admin access:
- * - VITE_ADMIN_ENABLED=true: Full admin functionality (staging/development)
- * - VITE_ADMIN_ENABLED=false: Public-only site (production)
+ * Admin routes are always available but hidden from navigation
+ * Access via direct URL: /admin-login and /admin
  */
 function App() {
-  // Check if admin functionality should be enabled based on environment variable
-  const isAdminEnabled = import.meta.env.VITE_ADMIN_ENABLED === 'true'
-
   return (
     <AuthProvider>
       {/* Suspense wrapper for lazy-loaded admin components */}
@@ -46,28 +42,16 @@ function App() {
             <Route path="about" element={<AboutPage />} />
             <Route path="contact" element={<ContactPage />} />
             
-            {/* Admin routes - only available when admin is enabled */}
-            {isAdminEnabled && (
-              <>
-                <Route path="admin-login" element={<AdminLoginPage />} />
-                <Route 
-                  path="admin" 
-                  element={
-                    <ProtectedRoute>
-                      <AdminPage />
-                    </ProtectedRoute>
-                  } 
-                />
-              </>
-            )}
-            
-            {/* Redirect admin routes to home when admin is disabled (production) */}
-            {!isAdminEnabled && (
-              <>
-                <Route path="admin-login" element={<Navigate to="/" replace />} />
-                <Route path="admin" element={<Navigate to="/" replace />} />
-              </>
-            )}
+            {/* Admin routes - always available but hidden from navigation */}
+            <Route path="admin-login" element={<AdminLoginPage />} />
+            <Route 
+              path="admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Catch-all route for 404 pages */}
             <Route path="*" element={<Navigate to="/" replace />} />

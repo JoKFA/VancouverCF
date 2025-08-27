@@ -68,8 +68,56 @@ function BlogPage() {
       const arrayBuffer = await response.arrayBuffer()
       
       if (fileUrl.toLowerCase().includes('.docx')) {
-        const result = await mammoth.convertToHtml({ arrayBuffer })
+        // Enhanced mammoth configuration to preserve Word formatting
+        const result = await mammoth.convertToHtml({ arrayBuffer }, {
+          // Preserve styling from Word document
+          styleMap: [
+            "p[style-name='Heading 1'] => h1:fresh",
+            "p[style-name='Heading 2'] => h2:fresh", 
+            "p[style-name='Heading 3'] => h3:fresh",
+            "p[style-name='Heading 4'] => h4:fresh",
+            "p[style-name='Title'] => h1.doc-title:fresh",
+            "p[style-name='Subtitle'] => h2.doc-subtitle:fresh",
+            "r[style-name='Strong'] => strong",
+            "p[style-name='Quote'] => blockquote > p:fresh"
+          ],
+          // Convert images and preserve inline styles
+          convertImage: mammoth.images.imgElement(function(image) {
+            return image.read("base64").then(function(imageBuffer) {
+              return {
+                src: "data:" + image.contentType + ";base64," + imageBuffer
+              }
+            })
+          }),
+          // Include default paragraph styles
+          includeDefaultStyleMap: true,
+          // Preserve embedded styles
+          includeEmbeddedStyleMap: true
+        })
+        
+        // Set the converted content
         setBlogContent(result.value)
+        
+        // Log warnings if any formatting couldn't be converted
+        if (result.messages.length > 0) {
+          console.warn('Word document conversion warnings:', result.messages)
+          
+          // Show user-friendly message for conversion issues
+          const hasImportantWarnings = result.messages.some(msg => 
+            msg.type === 'error' || msg.message.includes('Unrecognised')
+          )
+          
+          if (hasImportantWarnings) {
+            setBlogContent(result.value + `
+              <div class="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-sm text-amber-700">
+                  <strong>Note:</strong> Some formatting from the original Word document may not display perfectly. 
+                  The content has been converted to preserve as much styling as possible.
+                </p>
+              </div>
+            `)
+          }
+        }
       } else if (fileUrl.toLowerCase().includes('.pdf')) {
         // For PDF files, we'll show a message to download
         setBlogContent(`
