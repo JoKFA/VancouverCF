@@ -15,9 +15,10 @@ import {
   CheckSquare,
   Users
 } from 'lucide-react'
-import { supabase, Event, EventRecap, ContentBlock } from '../../lib/supabase'
+import { supabase, Event, EventRecap, ContentBlock, ContentBlockType } from '../../lib/supabase'
 import { EventMigrationService } from '../../lib/migration'
 import { ContentBlockEditor } from './ContentBlockEditor'
+import AddContentBlocksPanel from './AddContentBlocksPanel'
 
 interface EventRecapManagerProps {
   onClose?: () => void
@@ -196,10 +197,63 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
     }
   }
 
-  const startEditingRecap = () => {
-    // TODO: Implement recap info editing (title, summary, etc.)
-    alert('Recap info editing coming soon! For now, you can edit individual content blocks.')
+  const handleAddContentBlock = async (blockType: ContentBlockType) => {
+    if (!selectedRecap) return
+
+    try {
+      // Create default content for different block types
+      const getDefaultContent = (type: ContentBlockType) => {
+        switch (type) {
+          case 'text':
+            return { text: '<p>Enter your content here...</p>' }
+          case 'image_gallery':
+            return { images: [] }
+          case 'statistics':
+            return { statistics: [] }
+          case 'quote':
+            return { text: '', author: '' }
+          case 'highlights':
+            return { highlights: [] }
+          case 'attendee_feedback':
+            return { feedback_items: [] }
+          default:
+            return {}
+        }
+      }
+
+      // Generate new block
+      const newBlock: ContentBlock = {
+        id: crypto.randomUUID(),
+        type: blockType,
+        order: (selectedRecap.content_blocks?.length || 0) + 1,
+        content: getDefaultContent(blockType)
+      }
+
+      // Add to existing blocks
+      const updatedBlocks = [...(selectedRecap.content_blocks || []), newBlock]
+      
+      // Update database
+      const { error } = await supabase
+        .from('event_recaps')
+        .update({ content_blocks: updatedBlocks })
+        .eq('id', selectedRecap.id)
+
+      if (error) throw error
+
+      // Update local state
+      const updatedRecap = { ...selectedRecap, content_blocks: updatedBlocks }
+      setSelectedRecap(updatedRecap)
+      setRecaps(recaps.map(r => r.id === selectedRecap.id ? updatedRecap : r))
+
+      // Automatically open the editor for the new block
+      setEditingBlock(newBlock)
+      
+    } catch (error) {
+      console.error('Error adding content block:', error)
+      alert('Failed to add content block')
+    }
   }
+
 
   if (loading) {
     return (
@@ -370,16 +424,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                     <p className="text-sm text-gray-500 mt-2">Click on any block to edit its content</p>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={startEditingRecap}
-                      className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                    >
-                      <Edit size={16} className="mr-2" />
-                      Edit Recap Info
-                    </motion.button>
+                  <div className="flex items-center justify-end">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -389,6 +434,15 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                       <Eye size={16} className="mr-2" />
                       Preview
                     </motion.button>
+                  </div>
+
+                  {/* Add Content Blocks Panel */}
+                  <div className="mt-6">
+                    <AddContentBlocksPanel
+                      recap={selectedRecap}
+                      onAddBlock={handleAddContentBlock}
+                      onEditBlock={handleEditBlock}
+                    />
                   </div>
                 </div>
               ) : (
