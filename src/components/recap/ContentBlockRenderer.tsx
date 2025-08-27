@@ -51,6 +51,12 @@ function ContentBlockComponent({ block }: { block: ContentBlock }) {
     return null
   }
 
+  // Check if content is empty and should be hidden
+  const isEmpty = isContentBlockEmpty(block)
+  if (isEmpty) {
+    return null
+  }
+
   switch (block.type) {
     case 'text':
       return <TextBlockComponent block={block as TextBlock} />
@@ -67,6 +73,35 @@ function ContentBlockComponent({ block }: { block: ContentBlock }) {
     default:
       console.warn('Unknown content block type:', block.type)
       return null
+  }
+}
+
+// Helper function to check if a content block is empty
+function isContentBlockEmpty(block: ContentBlock): boolean {
+  switch (block.type) {
+    case 'text':
+      const textContent = block.content.text?.trim() || ''
+      return !textContent || textContent === '<p></p>' || textContent === '<p><br></p>'
+    
+    case 'image_gallery':
+      return !block.content.images || block.content.images.length === 0
+    
+    case 'statistics':
+      return !block.content.stats || block.content.stats.length === 0
+    
+    case 'quote':
+      return !block.content.quote?.trim()
+    
+    case 'highlights':
+      return !block.content.items || block.content.items.length === 0 || 
+             block.content.items.every((item: any) => !item.text?.trim())
+    
+    case 'attendee_feedback':
+      return !block.content.feedback || block.content.feedback.length === 0 ||
+             block.content.feedback.every((item: any) => !item.comment?.trim())
+    
+    default:
+      return false
   }
 }
 
