@@ -1,0 +1,416 @@
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import {
+  Calendar,
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  X,
+  FileText,
+  Image,
+  BarChart3,
+  MessageSquare,
+  CheckSquare,
+  Users
+} from 'lucide-react'
+import { supabase, Event, EventRecap, ContentBlock } from '../../lib/supabase'
+import { EventMigrationService } from '../../lib/migration'
+
+interface EventRecapManagerProps {
+  onClose?: () => void
+}
+
+export function EventRecapManager({ onClose }: EventRecapManagerProps) {
+  const [events, setEvents] = useState<Event[]>([])
+  const [recaps, setRecaps] = useState<EventRecap[]>([])
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [selectedRecap, setSelectedRecap] = useState<EventRecap | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [migrationLoading, setMigrationLoading] = useState(false)
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const [eventsResult, recapsResult] = await Promise.all([
+        supabase.from('events').select('*').order('date', { ascending: false }),
+        supabase.from('event_recaps').select('*').order('created_at', { ascending: false })
+      ])
+
+      if (eventsResult.data) setEvents(eventsResult.data)
+      if (recapsResult.data) setRecaps(recapsResult.data)
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const runMigration = async () => {
+    setMigrationLoading(true)
+    try {
+      const migrationService = new EventMigrationService()
+      const results = await migrationService.migrateAllEvents()
+      
+      const successful = results.filter(r => r.success).length
+      alert(`Migration completed! Successfully migrated ${successful} events.`)
+      
+      await loadData()
+    } catch (error) {
+      console.error('Migration failed:', error)
+      alert('Migration failed. Check console for details.')
+    } finally {
+      setMigrationLoading(false)
+    }
+  }
+
+  const createSampleRecap = async (eventId: string) => {
+    try {
+      const migrationService = new EventMigrationService()
+      await migrationService.createSampleRecap(eventId)
+      alert('Sample recap created successfully!')
+      await loadData()
+    } catch (error) {
+      console.error('Error creating sample recap:', error)
+      alert('Failed to create sample recap')
+    }
+  }
+
+  const deleteRecap = async (recapId: string) => {
+    if (!confirm('Are you sure you want to delete this recap?')) return
+
+    try {
+      const { error } = await supabase
+        .from('event_recaps')
+        .delete()
+        .eq('id', recapId)
+
+      if (error) throw error
+      await loadData()
+      setSelectedRecap(null)
+    } catch (error) {
+      console.error('Error deleting recap:', error)
+      alert('Failed to delete recap')
+    }
+  }
+
+  const togglePublished = async (recap: EventRecap) => {
+    try {
+      const { error } = await supabase
+        .from('event_recaps')
+        .update({ published: !recap.published })
+        .eq('id', recap.id)
+
+      if (error) throw error
+      await loadData()
+    } catch (error) {
+      console.error('Error updating recap:', error)
+      alert('Failed to update recap')
+    }
+  }
+
+  const getContentBlockIcon = (type: string) => {
+    switch (type) {
+      case 'text': return FileText
+      case 'image_gallery': return Image
+      case 'statistics': return BarChart3
+      case 'quote': return MessageSquare
+      case 'highlights': return CheckSquare
+      case 'attendee_feedback': return Users
+      default: return FileText
+    }
+  }
+
+  const getRecapForEvent = (eventId: string) => {
+    return recaps.find(recap => recap.event_id === eventId)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Event Recap Manager</h1>
+          <p className="text-gray-600 mt-2">Manage structured event recaps and migrate from legacy system</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={runMigration}
+            disabled={migrationLoading}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {migrationLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            ) : (
+              <Plus size={16} className="mr-2" />
+            )}
+            Run Migration
+          </motion.button>
+          {onClose && (
+            <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700">
+              <X size={20} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Events List */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-900">Events</h2>
+            <p className="text-gray-600 text-sm">Select an event to manage its recap</p>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {events.map((event) => {
+              const recap = getRecapForEvent(event.id)
+              return (
+                <motion.div
+                  key={event.id}
+                  whileHover={{ backgroundColor: '#f8fafc' }}
+                  onClick={() => {
+                    setSelectedEvent(event)
+                    setSelectedRecap(recap || null)
+                  }}
+                  className={`p-4 border-b border-gray-50 cursor-pointer ${
+                    selectedEvent?.id === event.id ? 'bg-purple-50 border-purple-200' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{event.title}</h3>
+                      <div className="flex items-center text-sm text-gray-600 mt-1 space-x-4">
+                        <div className="flex items-center">
+                          <Calendar size={14} className="mr-1" />
+                          {new Date(event.date).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin size={14} className="mr-1" />
+                          {event.location}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        event.status === 'upcoming' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {event.status}
+                      </span>
+                      {recap && (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          recap.published 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {recap.published ? 'Published' : 'Draft'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Recap Details */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">
+                {selectedEvent ? `${selectedEvent.title} - Recap` : 'Select Event'}
+              </h2>
+              {selectedRecap && (
+                <div className="flex items-center space-x-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => togglePublished(selectedRecap)}
+                    className={`flex items-center px-3 py-1 rounded-lg text-sm font-medium ${
+                      selectedRecap.published
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                    }`}
+                  >
+                    <Eye size={14} className="mr-1" />
+                    {selectedRecap.published ? 'Published' : 'Draft'}
+                  </motion.button>
+                  <button
+                    onClick={() => deleteRecap(selectedRecap.id)}
+                    className="p-2 text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="p-6">
+            {selectedEvent ? (
+              selectedRecap ? (
+                /* Show Recap Details */
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">{selectedRecap.title}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{selectedRecap.summary}</p>
+                  </div>
+
+                  {/* Content Blocks */}
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">Content Blocks ({selectedRecap.content_blocks?.length || 0})</h4>
+                    <div className="space-y-2">
+                      {selectedRecap.content_blocks?.map((block: ContentBlock, index: number) => {
+                        const IconComponent = getContentBlockIcon(block.type)
+                        return (
+                          <div key={block.id} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <IconComponent size={16} className="text-purple-600 mr-3" />
+                            <div className="flex-1">
+                              <span className="font-medium text-sm capitalize">{block.type.replace('_', ' ')}</span>
+                              <span className="text-gray-500 text-xs ml-2">#{index + 1}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      <Edit size={16} className="mr-2" />
+                      Edit Recap
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => window.open(`/events/${selectedEvent.id}`, '_blank')}
+                      className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                    >
+                      <Eye size={16} className="mr-2" />
+                      Preview
+                    </motion.button>
+                  </div>
+                </div>
+              ) : (
+                /* No Recap - Show Creation Options */
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText size={24} className="text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Recap Available</h3>
+                  <p className="text-gray-600 mb-6">Create a structured recap for this event</p>
+                  
+                  <div className="space-y-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => createSampleRecap(selectedEvent.id)}
+                      className="flex items-center justify-center w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      Create Sample Recap
+                    </motion.button>
+                    
+                    {selectedEvent.recap_file_url && (
+                      <div className="text-sm text-gray-500">
+                        <p className="mb-2">Legacy recap file detected:</p>
+                        <a 
+                          href={selectedEvent.recap_file_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-700 underline"
+                        >
+                          View Original File
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            ) : (
+              /* No Event Selected */
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar size={24} className="text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Select an Event</h3>
+                <p className="text-gray-600">Choose an event from the list to manage its recap</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+              <Calendar size={24} className="text-blue-600" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{events.length}</div>
+              <div className="text-gray-600 text-sm">Total Events</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+              <FileText size={24} className="text-green-600" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{recaps.length}</div>
+              <div className="text-gray-600 text-sm">Structured Recaps</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+              <Eye size={24} className="text-purple-600" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{recaps.filter(r => r.published).length}</div>
+              <div className="text-gray-600 text-sm">Published</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+              <Edit size={24} className="text-yellow-600" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900">{recaps.filter(r => !r.published).length}</div>
+              <div className="text-gray-600 text-sm">Drafts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

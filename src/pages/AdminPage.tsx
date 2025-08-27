@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Archive, Search, Download, X, User } from 'lucide-react'
 import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { EventRecapManager } from '../components/admin/EventRecapManager'
 
 /**
  * Admin Dashboard Component
@@ -19,7 +20,7 @@ function AdminPage() {
   const { signOut } = useAuth()
   
   // Tab state management
-  const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
+  const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team' | 'recaps'>('events')
   
   // Data state
   const [events, setEvents] = useState<Event[]>([])
@@ -357,6 +358,16 @@ function AdminPage() {
             Events
           </button>
           <button
+            onClick={() => setActiveTab('recaps')}
+            className={`px-6 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'recaps'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Event Recaps
+          </button>
+          <button
             onClick={() => setActiveTab('resumes')}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'resumes'
@@ -447,6 +458,11 @@ function AdminPage() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Event Recaps management tab */}
+        {activeTab === 'recaps' && (
+          <EventRecapManager />
         )}
 
         {/* Resume management tab */}
