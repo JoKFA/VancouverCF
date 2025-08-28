@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import {
   Calendar,
   MapPin,
@@ -15,9 +16,10 @@ import {
   CheckSquare,
   Users
 } from 'lucide-react'
-import { supabase, Event, EventRecap, ContentBlock } from '../../lib/supabase'
+import { supabase, Event, EventRecap, ContentBlock, ContentBlockType } from '../../lib/supabase'
 import { EventMigrationService } from '../../lib/migration'
 import { ContentBlockEditor } from './ContentBlockEditor'
+// Remove the AddContentBlocksPanel import - we'll inline the functionality
 
 interface EventRecapManagerProps {
   onClose?: () => void
@@ -31,9 +33,27 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
   const [loading, setLoading] = useState(true)
   const [migrationLoading, setMigrationLoading] = useState(false)
   const [editingBlock, setEditingBlock] = useState<ContentBlock | null>(null)
+  
+  // Operation loading states
+  const [creatingRecap, setCreatingRecap] = useState<string | null>(null)
+  const [addingBlock, setAddingBlock] = useState(false)
+  const [showAddBlockMenu, setShowAddBlockMenu] = useState(false)
+  const addMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadData()
+  }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
+        setShowAddBlockMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const loadData = async () => {
@@ -59,26 +79,29 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       const results = await migrationService.migrateAllEvents()
       
       const successful = results.filter(r => r.success).length
-      alert(`Migration completed! Successfully migrated ${successful} events.`)
+      toast.success(`Migration completed! Successfully migrated ${successful} events.`)
       
       await loadData()
     } catch (error) {
       console.error('Migration failed:', error)
-      alert('Migration failed. Check console for details.')
+      toast.error('Migration failed. Check console for details.')
     } finally {
       setMigrationLoading(false)
     }
   }
 
   const createSampleRecap = async (eventId: string) => {
+    setCreatingRecap(eventId)
     try {
       const migrationService = new EventMigrationService()
       await migrationService.createSampleRecap(eventId)
-      alert('Sample recap created successfully!')
+      toast.success('Sample recap created successfully!')
       await loadData()
     } catch (error) {
       console.error('Error creating sample recap:', error)
-      alert('Failed to create sample recap')
+      toast.error('Failed to create sample recap')
+    } finally {
+      setCreatingRecap(null)
     }
   }
 
@@ -96,7 +119,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       setSelectedRecap(null)
     } catch (error) {
       console.error('Error deleting recap:', error)
-      alert('Failed to delete recap')
+      toast.error('Failed to delete recap')
     }
   }
 
@@ -111,7 +134,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       await loadData()
     } catch (error) {
       console.error('Error updating recap:', error)
-      alert('Failed to update recap')
+      toast.error('Failed to update recap')
     }
   }
 
@@ -137,7 +160,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
 
   const handleSaveBlock = async (updatedBlock: ContentBlock) => {
     if (!selectedRecap) return
-
+    
     try {
       // Update the content block in the recap
       const updatedBlocks = selectedRecap.content_blocks.map(block =>
@@ -160,9 +183,11 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         const updatedRecap = getRecapForEvent(selectedEvent.id)
         setSelectedRecap(updatedRecap || null)
       }
+      
+      toast.success('Content block updated successfully!')
     } catch (error) {
       console.error('Error updating content block:', error)
-      alert('Failed to update content block')
+      toast.error('Failed to update content block')
     }
   }
 
@@ -190,16 +215,74 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         const updatedRecap = getRecapForEvent(selectedEvent.id)
         setSelectedRecap(updatedRecap || null)
       }
+      
+      toast.success('Content block deleted successfully!')
     } catch (error) {
       console.error('Error deleting content block:', error)
-      alert('Failed to delete content block')
+      toast.error('Failed to delete content block')
     }
   }
 
-  const startEditingRecap = () => {
-    // TODO: Implement recap info editing (title, summary, etc.)
-    alert('Recap info editing coming soon! For now, you can edit individual content blocks.')
+  const handleAddContentBlock = async (blockType: ContentBlockType) => {
+    if (!selectedRecap) return
+    
+    setAddingBlock(true)
+    try {
+      // Create default content for different block types
+      const getDefaultContent = (type: ContentBlockType) => {
+        switch (type) {
+          case 'text':
+            return { text: '<p>Enter your content here...</p>' }
+          case 'image_gallery':
+            return { images: [] }
+          case 'statistics':
+            return { statistics: [] }
+          case 'quote':
+            return { text: '', author: '' }
+          case 'highlights':
+            return { highlights: [] }
+          case 'attendee_feedback':
+            return { feedback_items: [] }
+          default:
+            return {}
+        }
+      }
+
+      // Generate new block
+      const newBlock: ContentBlock = {
+        id: crypto.randomUUID(),
+        type: blockType,
+        order: (selectedRecap.content_blocks?.length || 0) + 1,
+        content: getDefaultContent(blockType)
+      }
+
+      // Add to existing blocks
+      const updatedBlocks = [...(selectedRecap.content_blocks || []), newBlock]
+      
+      // Update database
+      const { error } = await supabase
+        .from('event_recaps')
+        .update({ content_blocks: updatedBlocks })
+        .eq('id', selectedRecap.id)
+
+      if (error) throw error
+
+      // Update local state
+      const updatedRecap = { ...selectedRecap, content_blocks: updatedBlocks }
+      setSelectedRecap(updatedRecap)
+      setRecaps(recaps.map(r => r.id === selectedRecap.id ? updatedRecap : r))
+
+      // Automatically open the editor for the new block
+      setEditingBlock(newBlock)
+      
+    } catch (error) {
+      console.error('Error adding content block:', error)
+      toast.error('Failed to add content block')
+    } finally {
+      setAddingBlock(false)
+    }
   }
+
 
   if (loading) {
     return (
@@ -244,11 +327,18 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         {/* Events List */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900">Events</h2>
-            <p className="text-gray-600 text-sm">Select an event to manage its recap</p>
+            <h2 className="text-xl font-bold text-gray-900">Past Events</h2>
+            <p className="text-gray-600 text-sm">Select a past event to manage its recap</p>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {events.map((event) => {
+            {events.filter(event => event.status === 'past').length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <Calendar size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Past Events</p>
+                <p className="text-sm">Events need to be marked as "past" before you can create recaps for them.</p>
+              </div>
+            ) : (
+              events.filter(event => event.status === 'past').map((event) => {
               const recap = getRecapForEvent(event.id)
               return (
                 <motion.div
@@ -297,7 +387,8 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                   </div>
                 </motion.div>
               )
-            })}
+            })
+            )}
           </div>
         </div>
 
@@ -370,16 +461,73 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                     <p className="text-sm text-gray-500 mt-2">Click on any block to edit its content</p>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={startEditingRecap}
-                      className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                    >
-                      <Edit size={16} className="mr-2" />
-                      Edit Recap Info
-                    </motion.button>
+                  <div className="flex items-center justify-between">
+                    {/* Add Content Block Button */}
+                    <div className="relative" ref={addMenuRef}>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowAddBlockMenu(!showAddBlockMenu)}
+                        disabled={addingBlock}
+                        className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                          addingBlock
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                        } text-white`}
+                      >
+                        {addingBlock ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={16} className="mr-2" />
+                            Add Content Block
+                          </>
+                        )}
+                      </motion.button>
+
+                      {/* Dropdown Menu */}
+                      {showAddBlockMenu && !addingBlock && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50"
+                        >
+                          <div className="p-3 border-b border-gray-100">
+                            <h3 className="font-semibold text-gray-900">Select Content Type</h3>
+                          </div>
+                          <div className="p-2 space-y-1">
+                            {[
+                              { type: 'text' as ContentBlockType, name: 'Text Content', icon: '📝', desc: 'Rich text blocks' },
+                              { type: 'image_gallery' as ContentBlockType, name: 'Image Gallery', icon: '🖼️', desc: 'Photo collections' },
+                              { type: 'statistics' as ContentBlockType, name: 'Statistics', icon: '📊', desc: 'Key metrics' },
+                              { type: 'quote' as ContentBlockType, name: 'Quote', icon: '💬', desc: 'Testimonials' },
+                              { type: 'highlights' as ContentBlockType, name: 'Highlights', icon: '✨', desc: 'Key takeaways' },
+                              { type: 'attendee_feedback' as ContentBlockType, name: 'Feedback', icon: '👥', desc: 'Participant reviews' }
+                            ].map((blockType) => (
+                              <motion.button
+                                key={blockType.type}
+                                whileHover={{ backgroundColor: '#f8fafc' }}
+                                onClick={() => {
+                                  handleAddContentBlock(blockType.type)
+                                  setShowAddBlockMenu(false)
+                                }}
+                                className="w-full flex items-start p-3 text-left rounded-lg transition-colors"
+                              >
+                                <span className="text-xl mr-3 mt-0.5">{blockType.icon}</span>
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{blockType.name}</div>
+                                  <div className="text-sm text-gray-500">{blockType.desc}</div>
+                                </div>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -402,13 +550,27 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                   
                   <div className="space-y-3">
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={creatingRecap !== selectedEvent.id ? { scale: 1.05 } : {}}
+                      whileTap={creatingRecap !== selectedEvent.id ? { scale: 0.95 } : {}}
                       onClick={() => createSampleRecap(selectedEvent.id)}
-                      className="flex items-center justify-center w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                      disabled={creatingRecap === selectedEvent.id}
+                      className={`flex items-center justify-center w-full px-4 py-3 rounded-lg transition-colors ${
+                        creatingRecap === selectedEvent.id
+                          ? 'bg-purple-400 cursor-not-allowed'
+                          : 'bg-purple-600 hover:bg-purple-700'
+                      } text-white`}
                     >
-                      <Plus size={16} className="mr-2" />
-                      Create Sample Recap
+                      {creatingRecap === selectedEvent.id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                          Creating Recap...
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-2" />
+                          Create Sample Recap
+                        </>
+                      )}
                     </motion.button>
                     
                     {selectedEvent.recap_file_url && (
@@ -449,8 +611,8 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
               <Calendar size={24} className="text-blue-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{events.length}</div>
-              <div className="text-gray-600 text-sm">Total Events</div>
+              <div className="text-2xl font-bold text-gray-900">{events.filter(e => e.status === 'past').length}</div>
+              <div className="text-gray-600 text-sm">Past Events</div>
             </div>
           </div>
         </div>

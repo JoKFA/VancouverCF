@@ -318,9 +318,9 @@ function BlogPage() {
               {/* Event Description */}
               <div className="mb-8 p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Event</h2>
-                <p className="text-gray-700 leading-relaxed text-lg">
+                <div className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
                   {event.description}
-                </p>
+                </div>
               </div>
 
               {/* Legacy Blog Content */}
