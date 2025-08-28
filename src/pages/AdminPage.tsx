@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Archive, Search, Download, X, User } from 'lucide-react'
-import { supabase, Event, Resume, TeamMember } from '../lib/supabase'
+import toast from 'react-hot-toast'
+import { supabase, Event, Resume, TeamMember, EventRecap } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { EventRecapManager } from '../components/admin/EventRecapManager'
 
 /**
  * Admin Dashboard Component
@@ -19,13 +21,20 @@ function AdminPage() {
   const { signOut } = useAuth()
   
   // Tab state management
-  const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team'>('events')
+  const [activeTab, setActiveTab] = useState<'events' | 'resumes' | 'team' | 'recaps'>('events')
   
   // Data state
   const [events, setEvents] = useState<Event[]>([])
   const [resumes, setResumes] = useState<Resume[]>([])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [eventRecaps, setEventRecaps] = useState<EventRecap[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Operation loading states
+  const [savingEvent, setSavingEvent] = useState(false)
+  const [savingTeamMember, setSavingTeamMember] = useState(false)
+  const [deletingEvent, setDeletingEvent] = useState<string | null>(null)
+  const [deletingTeamMember, setDeletingTeamMember] = useState<string | null>(null)
   
   // Modal state for events
   const [showEventModal, setShowEventModal] = useState(false)
@@ -58,19 +67,22 @@ function AdminPage() {
    */
   const fetchData = async () => {
     try {
-      const [eventsResponse, resumesResponse, teamResponse] = await Promise.all([
+      const [eventsResponse, resumesResponse, teamResponse, recapsResponse] = await Promise.all([
         supabase.from('events').select('*').order('created_at', { ascending: false }),
         supabase.from('resumes').select('*').order('created_at', { ascending: false }),
-        supabase.from('team_members').select('*').order('order_index', { ascending: true })
+        supabase.from('team_members').select('*').order('order_index', { ascending: true }),
+        supabase.from('event_recaps').select('*').order('created_at', { ascending: false })
       ])
 
       if (eventsResponse.error) throw eventsResponse.error
       if (resumesResponse.error) throw resumesResponse.error
       if (teamResponse.error) throw teamResponse.error
+      if (recapsResponse.error) throw recapsResponse.error
 
       setEvents(eventsResponse.data || [])
       setResumes(resumesResponse.data || [])
       setTeamMembers(teamResponse.data || [])
+      setEventRecaps(recapsResponse.data || [])
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -83,6 +95,7 @@ function AdminPage() {
    * Processes form data, uploads image if provided, and saves to database
    */
   const handleEventSubmit = async (formData: FormData) => {
+    setSavingEvent(true)
     try {
       let imageUrl = editingEvent?.image_url || formData.get('image_url') as string || ''
 
@@ -133,9 +146,12 @@ function AdminPage() {
       setShowEventModal(false)
       setEditingEvent(null)
       setEventImageFile(null)
+      toast.success(editingEvent ? 'Event updated successfully!' : 'Event created successfully!')
     } catch (error) {
       console.error('Error saving event:', error)
-      alert('Failed to save event')
+      toast.error('Failed to save event. Please try again.')
+    } finally {
+      setSavingEvent(false)
     }
   }
 
@@ -144,6 +160,7 @@ function AdminPage() {
    * Includes avatar file upload to storage
    */
   const handleTeamSubmit = async (formData: FormData) => {
+    setSavingTeamMember(true)
     try {
       let avatarUrl = editingTeamMember?.avatar_url || ''
 
@@ -193,9 +210,12 @@ function AdminPage() {
       setShowTeamModal(false)
       setEditingTeamMember(null)
       setAvatarFile(null)
+      toast.success(editingTeamMember ? 'Team member updated successfully!' : 'Team member added successfully!')
     } catch (error) {
       console.error('Error saving team member:', error)
-      alert('Failed to save team member')
+      toast.error('Failed to save team member. Please try again.')
+    } finally {
+      setSavingTeamMember(false)
     }
   }
 
@@ -205,7 +225,8 @@ function AdminPage() {
    */
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm('Are you sure you want to delete this event?')) return
-
+    
+    setDeletingEvent(eventId)
     try {
       const { error } = await supabase
         .from('events')
@@ -214,9 +235,12 @@ function AdminPage() {
       
       if (error) throw error
       await fetchData()
+      toast.success('Event deleted successfully!')
     } catch (error) {
       console.error('Error deleting event:', error)
-      alert('Failed to delete event')
+      toast.error('Failed to delete event. Please try again.')
+    } finally {
+      setDeletingEvent(null)
     }
   }
 
@@ -226,7 +250,8 @@ function AdminPage() {
    */
   const handleDeleteTeamMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to delete this team member?')) return
-
+    
+    setDeletingTeamMember(memberId)
     try {
       const { error } = await supabase
         .from('team_members')
@@ -235,9 +260,12 @@ function AdminPage() {
       
       if (error) throw error
       await fetchData()
+      toast.success('Team member deleted successfully!')
     } catch (error) {
       console.error('Error deleting team member:', error)
-      alert('Failed to delete team member')
+      toast.error('Failed to delete team member. Please try again.')
+    } finally {
+      setDeletingTeamMember(null)
     }
   }
 
@@ -281,7 +309,7 @@ function AdminPage() {
       setBlogFile(null)
     } catch (error) {
       console.error('Error moving event to past:', error)
-      alert('Failed to move event to past')
+      toast.error('Failed to move event to past. Please try again.')
     }
   }
 
@@ -321,6 +349,20 @@ function AdminPage() {
     })
   }
 
+  /**
+   * Get recap information for a specific event
+   */
+  const getEventRecapInfo = (eventId: string) => {
+    const recap = eventRecaps.find(r => r.event_id === eventId)
+    return {
+      hasRecap: !!recap,
+      recap: recap,
+      isPublished: recap?.published || false,
+      contentBlocksCount: recap?.content_blocks?.length || 0,
+      hasLegacyFile: false // This would be true if event has recap_file_url
+    }
+  }
+
   // Show loading spinner while data is being fetched
   if (loading) {
     return (
@@ -357,6 +399,16 @@ function AdminPage() {
             Events
           </button>
           <button
+            onClick={() => setActiveTab('recaps')}
+            className={`px-6 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'recaps'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Event Recaps
+          </button>
+          <button
             onClick={() => setActiveTab('resumes')}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'resumes'
@@ -382,7 +434,7 @@ function AdminPage() {
         {activeTab === 'events' && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Manage Events</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">Events & Recaps Overview</h2>
               <button
                 onClick={() => setShowEventModal(true)}
                 className="btn-primary flex items-center"
@@ -392,8 +444,67 @@ function AdminPage() {
               </button>
             </div>
 
+            {/* Quick Stats Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-purple-600">Total Events</p>
+                    <p className="text-3xl font-bold text-purple-900">{events.length}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    📅
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-green-600">Published Recaps</p>
+                    <p className="text-3xl font-bold text-green-900">
+                      {eventRecaps.filter(r => r.published).length}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    ✅
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-amber-600">Draft Recaps</p>
+                    <p className="text-3xl font-bold text-amber-900">
+                      {eventRecaps.filter(r => !r.published).length}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                    📝
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">No Recap</p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {events.length - eventRecaps.length}
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                    📄
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="grid gap-6">
-              {events.map((event) => (
+              {events.map((event) => {
+                const recapInfo = getEventRecapInfo(event.id)
+                return (
                 <div key={event.id} className="card p-6">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -403,24 +514,69 @@ function AdminPage() {
                       <p className="text-gray-600 mb-2">
                         {formatDate(event.date)} • {event.location}
                       </p>
-                      <p className="text-gray-600 mb-4">
+                      <div className="text-gray-600 mb-4 whitespace-pre-wrap">
                         {event.description}
-                      </p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                        event.status === 'upcoming'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {event.status}
-                      </span>
+                      </div>
+                      
+                      {/* Event Status and Recap Status */}
+                      <div className="flex items-center space-x-3 mb-3">
+                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                          event.status === 'upcoming'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {event.status}
+                        </span>
+                        
+                        {/* Recap Status Badge - Only for past events */}
+                        {event.status === 'past' && (
+                          recapInfo.hasRecap ? (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              recapInfo.isPublished
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              📝 {recapInfo.isPublished ? 'Published Recap' : 'Draft Recap'}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                              📄 No Recap
+                            </span>
+                          )
+                        )}
+                      </div>
+                      
+                      {/* Recap Details */}
+                      {event.status === 'past' && recapInfo.hasRecap && (
+                        <div className="text-sm text-gray-500 mb-2">
+                          {recapInfo.contentBlocksCount} content blocks • Last updated {formatDate(recapInfo.recap!.updated_at!)}
+                        </div>
+                      )}
                     </div>
                     <div className="flex space-x-2 ml-4">
+                      {event.status === 'past' && (
+                        <button
+                          onClick={() => {
+                            setActiveTab('recaps')
+                            // TODO: Add way to pre-select this event in recap manager
+                          }}
+                          className={`p-2 transition-colors ${
+                            recapInfo.hasRecap
+                              ? 'text-blue-600 hover:text-blue-700'
+                              : 'text-gray-600 hover:text-purple-600'
+                          }`}
+                          title={recapInfo.hasRecap ? 'Manage existing recap' : 'Create recap for this event'}
+                        >
+                          📝
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setEditingEvent(event)
                           setShowEventModal(true)
                         }}
                         className="p-2 text-gray-600 hover:text-primary-600"
+                        title="Edit event details"
                       >
                         <Edit size={18} />
                       </button>
@@ -437,16 +593,31 @@ function AdminPage() {
                       )}
                       <button
                         onClick={() => handleDeleteEvent(event.id)}
-                        className="p-2 text-gray-600 hover:text-red-600"
+                        disabled={deletingEvent === event.id}
+                        className={`p-2 transition-colors ${
+                          deletingEvent === event.id
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-gray-600 hover:text-red-600'
+                        }`}
                       >
-                        <Trash2 size={18} />
+                        {deletingEvent === event.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-red-600" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
+        )}
+
+        {/* Event Recaps management tab */}
+        {activeTab === 'recaps' && (
+          <EventRecapManager />
         )}
 
         {/* Resume management tab */}
@@ -549,9 +720,18 @@ function AdminPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteTeamMember(member.id)}
-                        className="p-2 text-gray-600 hover:text-red-600"
+                        disabled={deletingTeamMember === member.id}
+                        className={`p-2 transition-colors ${
+                          deletingTeamMember === member.id
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-gray-600 hover:text-red-600'
+                        }`}
                       >
-                        <Trash2 size={18} />
+                        {deletingTeamMember === member.id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-red-600" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -709,8 +889,17 @@ function AdminPage() {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary">
-                    {editingEvent ? 'Update' : 'Create'} Event
+                  <button 
+                    type="submit" 
+                    disabled={savingEvent}
+                    className={`btn-primary flex items-center space-x-2 ${
+                      savingEvent ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {savingEvent && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    )}
+                    <span>{savingEvent ? 'Saving...' : (editingEvent ? 'Update Event' : 'Create Event')}</span>
                   </button>
                 </div>
               </form>
@@ -823,8 +1012,17 @@ function AdminPage() {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-primary">
-                    {editingTeamMember ? 'Update' : 'Create'} Team Member
+                  <button 
+                    type="submit" 
+                    disabled={savingTeamMember}
+                    className={`btn-primary flex items-center space-x-2 ${
+                      savingTeamMember ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {savingTeamMember && (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    )}
+                    <span>{savingTeamMember ? 'Saving...' : (editingTeamMember ? 'Update Team Member' : 'Create Team Member')}</span>
                   </button>
                 </div>
               </form>

@@ -65,3 +65,108 @@ export interface TeamMember {
   order_index: number  // Display order (for sorting team members)
   created_at: string   // Timestamp when record was created
 }
+
+// Event recaps table - stores structured event recap content
+export interface EventRecap {
+  id: string                    // Unique identifier (UUID)
+  event_id: string             // Reference to events table
+  title: string                // Recap title
+  summary: string              // Brief recap summary
+  content_blocks: ContentBlock[] // Structured content blocks
+  featured_image_url?: string  // Optional hero image
+  seo_meta: {
+    description: string
+    keywords: string[]
+  }
+  published: boolean           // Publication status
+  author_id?: string          // Author reference
+  created_at: string          // Creation timestamp
+  updated_at: string          // Last update timestamp
+}
+
+// Content block types for structured recaps
+export interface ContentBlock {
+  id: string
+  type: ContentBlockType
+  order: number
+  content: any // Type-specific content structure
+}
+
+export type ContentBlockType = 
+  | 'text' 
+  | 'image_gallery' 
+  | 'statistics' 
+  | 'quote' 
+  | 'highlights' 
+  | 'attendee_feedback'
+
+// Specific content block interfaces
+export interface TextBlock {
+  type: 'text'
+  content: {
+    text: string // Rich text content (HTML)
+    style?: 'normal' | 'callout' | 'centered'
+  }
+}
+
+export interface ImageGalleryBlock {
+  type: 'image_gallery'
+  content: {
+    images: Array<{
+      url: string
+      caption?: string
+      alt_text: string
+    }>
+    layout: 'grid' | 'masonry' | 'carousel'
+    show_captions: boolean
+  }
+}
+
+export interface StatisticsBlock {
+  type: 'statistics'
+  content: {
+    stats: Array<{
+      label: string
+      value: string | number
+      icon?: string
+      highlight?: boolean
+    }>
+    layout: 'grid' | 'cards' | 'horizontal'
+    style: 'minimal' | 'colorful' | 'gradient'
+  }
+}
+
+export interface QuoteBlock {
+  type: 'quote'
+  content: {
+    quote: string
+    author: string
+    author_title?: string
+    author_image?: string
+    style: 'simple' | 'card' | 'testimonial'
+  }
+}
+
+export interface HighlightsBlock {
+  type: 'highlights'
+  content: {
+    items: Array<{
+      text: string
+      icon?: string
+    }>
+    style: 'checklist' | 'bullets' | 'numbered'
+  }
+}
+
+export interface AttendeeFeedbackBlock {
+  type: 'attendee_feedback'
+  content: {
+    feedback: Array<{
+      comment: string
+      author: string
+      rating?: number
+      role?: string
+    }>
+    display_style: 'cards' | 'quotes' | 'minimal'
+  }
+}
