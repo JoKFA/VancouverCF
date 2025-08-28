@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import {
@@ -19,7 +19,7 @@ import {
 import { supabase, Event, EventRecap, ContentBlock, ContentBlockType } from '../../lib/supabase'
 import { EventMigrationService } from '../../lib/migration'
 import { ContentBlockEditor } from './ContentBlockEditor'
-import AddContentBlocksPanel from './AddContentBlocksPanel'
+// Remove the AddContentBlocksPanel import - we'll inline the functionality
 
 interface EventRecapManagerProps {
   onClose?: () => void
@@ -37,9 +37,23 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
   // Operation loading states
   const [creatingRecap, setCreatingRecap] = useState<string | null>(null)
   const [addingBlock, setAddingBlock] = useState(false)
+  const [showAddBlockMenu, setShowAddBlockMenu] = useState(false)
+  const addMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadData()
+  }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
+        setShowAddBlockMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const loadData = async () => {
@@ -313,11 +327,18 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         {/* Events List */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900">Events</h2>
-            <p className="text-gray-600 text-sm">Select an event to manage its recap</p>
+            <h2 className="text-xl font-bold text-gray-900">Past Events</h2>
+            <p className="text-gray-600 text-sm">Select a past event to manage its recap</p>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {events.map((event) => {
+            {events.filter(event => event.status === 'past').length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <Calendar size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Past Events</p>
+                <p className="text-sm">Events need to be marked as "past" before you can create recaps for them.</p>
+              </div>
+            ) : (
+              events.filter(event => event.status === 'past').map((event) => {
               const recap = getRecapForEvent(event.id)
               return (
                 <motion.div
@@ -366,7 +387,8 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                   </div>
                 </motion.div>
               )
-            })}
+            })
+            )}
           </div>
         </div>
 
@@ -439,7 +461,73 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                     <p className="text-sm text-gray-500 mt-2">Click on any block to edit its content</p>
                   </div>
 
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-between">
+                    {/* Add Content Block Button */}
+                    <div className="relative" ref={addMenuRef}>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowAddBlockMenu(!showAddBlockMenu)}
+                        disabled={addingBlock}
+                        className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                          addingBlock
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                        } text-white`}
+                      >
+                        {addingBlock ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={16} className="mr-2" />
+                            Add Content Block
+                          </>
+                        )}
+                      </motion.button>
+
+                      {/* Dropdown Menu */}
+                      {showAddBlockMenu && !addingBlock && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50"
+                        >
+                          <div className="p-3 border-b border-gray-100">
+                            <h3 className="font-semibold text-gray-900">Select Content Type</h3>
+                          </div>
+                          <div className="p-2 space-y-1">
+                            {[
+                              { type: 'text' as ContentBlockType, name: 'Text Content', icon: '📝', desc: 'Rich text blocks' },
+                              { type: 'image_gallery' as ContentBlockType, name: 'Image Gallery', icon: '🖼️', desc: 'Photo collections' },
+                              { type: 'statistics' as ContentBlockType, name: 'Statistics', icon: '📊', desc: 'Key metrics' },
+                              { type: 'quote' as ContentBlockType, name: 'Quote', icon: '💬', desc: 'Testimonials' },
+                              { type: 'highlights' as ContentBlockType, name: 'Highlights', icon: '✨', desc: 'Key takeaways' },
+                              { type: 'attendee_feedback' as ContentBlockType, name: 'Feedback', icon: '👥', desc: 'Participant reviews' }
+                            ].map((blockType) => (
+                              <motion.button
+                                key={blockType.type}
+                                whileHover={{ backgroundColor: '#f8fafc' }}
+                                onClick={() => {
+                                  handleAddContentBlock(blockType.type)
+                                  setShowAddBlockMenu(false)
+                                }}
+                                className="w-full flex items-start p-3 text-left rounded-lg transition-colors"
+                              >
+                                <span className="text-xl mr-3 mt-0.5">{blockType.icon}</span>
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{blockType.name}</div>
+                                  <div className="text-sm text-gray-500">{blockType.desc}</div>
+                                </div>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -449,16 +537,6 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                       <Eye size={16} className="mr-2" />
                       Preview
                     </motion.button>
-                  </div>
-
-                  {/* Add Content Blocks Panel */}
-                  <div className="mt-6">
-                    <AddContentBlocksPanel
-                      recap={selectedRecap}
-                      onAddBlock={handleAddContentBlock}
-                      onEditBlock={handleEditBlock}
-                      addingBlock={addingBlock}
-                    />
                   </div>
                 </div>
               ) : (
@@ -533,8 +611,8 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
               <Calendar size={24} className="text-blue-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-gray-900">{events.length}</div>
-              <div className="text-gray-600 text-sm">Total Events</div>
+              <div className="text-2xl font-bold text-gray-900">{events.filter(e => e.status === 'past').length}</div>
+              <div className="text-gray-600 text-sm">Past Events</div>
             </div>
           </div>
         </div>

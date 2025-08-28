@@ -4,6 +4,7 @@ import { Calendar, MapPin, FileText, Clock, Users, Sparkles, Star } from 'lucide
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { supabase, Event } from '../lib/supabase'
+import ExpandableDescription from '../components/ExpandableDescription'
 
 /**
  * Events Page Component
@@ -71,6 +72,7 @@ function EventsPage() {
       day: 'numeric'
     })
   }
+
 
   /**
    * Event Card Component
@@ -165,9 +167,12 @@ function EventsPage() {
           </motion.div>
         </div>
 
-        <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
-          {event.description}
-        </p>
+        <div className="mb-6" id={`description-${event.id}`}>
+          <ExpandableDescription 
+            text={event.description}
+            className="text-gray-600 leading-relaxed"
+          />
+        </div>
 
         {/* Action buttons based on event status */}
         {event.status === 'past' && event.recap_file_url && (

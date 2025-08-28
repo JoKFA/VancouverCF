@@ -514,9 +514,9 @@ function AdminPage() {
                       <p className="text-gray-600 mb-2">
                         {formatDate(event.date)} • {event.location}
                       </p>
-                      <p className="text-gray-600 mb-4">
+                      <div className="text-gray-600 mb-4 whitespace-pre-wrap">
                         {event.description}
-                      </p>
+                      </div>
                       
                       {/* Event Status and Recap Status */}
                       <div className="flex items-center space-x-3 mb-3">
@@ -528,44 +528,48 @@ function AdminPage() {
                           {event.status}
                         </span>
                         
-                        {/* Recap Status Badge */}
-                        {recapInfo.hasRecap ? (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            recapInfo.isPublished
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            📝 {recapInfo.isPublished ? 'Published Recap' : 'Draft Recap'}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                            📄 No Recap
-                          </span>
+                        {/* Recap Status Badge - Only for past events */}
+                        {event.status === 'past' && (
+                          recapInfo.hasRecap ? (
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              recapInfo.isPublished
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              📝 {recapInfo.isPublished ? 'Published Recap' : 'Draft Recap'}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                              📄 No Recap
+                            </span>
+                          )
                         )}
                       </div>
                       
                       {/* Recap Details */}
-                      {recapInfo.hasRecap && (
+                      {event.status === 'past' && recapInfo.hasRecap && (
                         <div className="text-sm text-gray-500 mb-2">
                           {recapInfo.contentBlocksCount} content blocks • Last updated {formatDate(recapInfo.recap!.updated_at!)}
                         </div>
                       )}
                     </div>
                     <div className="flex space-x-2 ml-4">
-                      <button
-                        onClick={() => {
-                          setActiveTab('recaps')
-                          // TODO: Add way to pre-select this event in recap manager
-                        }}
-                        className={`p-2 transition-colors ${
-                          recapInfo.hasRecap
-                            ? 'text-blue-600 hover:text-blue-700'
-                            : 'text-gray-600 hover:text-purple-600'
-                        }`}
-                        title={recapInfo.hasRecap ? 'Manage existing recap' : 'Create recap for this event'}
-                      >
-                        📝
-                      </button>
+                      {event.status === 'past' && (
+                        <button
+                          onClick={() => {
+                            setActiveTab('recaps')
+                            // TODO: Add way to pre-select this event in recap manager
+                          }}
+                          className={`p-2 transition-colors ${
+                            recapInfo.hasRecap
+                              ? 'text-blue-600 hover:text-blue-700'
+                              : 'text-gray-600 hover:text-purple-600'
+                          }`}
+                          title={recapInfo.hasRecap ? 'Manage existing recap' : 'Create recap for this event'}
+                        >
+                          📝
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setEditingEvent(event)
