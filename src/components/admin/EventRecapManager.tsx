@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import {
   Calendar,
   MapPin,
@@ -32,6 +33,10 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
   const [loading, setLoading] = useState(true)
   const [migrationLoading, setMigrationLoading] = useState(false)
   const [editingBlock, setEditingBlock] = useState<ContentBlock | null>(null)
+  
+  // Operation loading states
+  const [creatingRecap, setCreatingRecap] = useState<string | null>(null)
+  const [addingBlock, setAddingBlock] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -60,26 +65,29 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       const results = await migrationService.migrateAllEvents()
       
       const successful = results.filter(r => r.success).length
-      alert(`Migration completed! Successfully migrated ${successful} events.`)
+      toast.success(`Migration completed! Successfully migrated ${successful} events.`)
       
       await loadData()
     } catch (error) {
       console.error('Migration failed:', error)
-      alert('Migration failed. Check console for details.')
+      toast.error('Migration failed. Check console for details.')
     } finally {
       setMigrationLoading(false)
     }
   }
 
   const createSampleRecap = async (eventId: string) => {
+    setCreatingRecap(eventId)
     try {
       const migrationService = new EventMigrationService()
       await migrationService.createSampleRecap(eventId)
-      alert('Sample recap created successfully!')
+      toast.success('Sample recap created successfully!')
       await loadData()
     } catch (error) {
       console.error('Error creating sample recap:', error)
-      alert('Failed to create sample recap')
+      toast.error('Failed to create sample recap')
+    } finally {
+      setCreatingRecap(null)
     }
   }
 
@@ -97,7 +105,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       setSelectedRecap(null)
     } catch (error) {
       console.error('Error deleting recap:', error)
-      alert('Failed to delete recap')
+      toast.error('Failed to delete recap')
     }
   }
 
@@ -112,7 +120,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       await loadData()
     } catch (error) {
       console.error('Error updating recap:', error)
-      alert('Failed to update recap')
+      toast.error('Failed to update recap')
     }
   }
 
@@ -138,7 +146,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
 
   const handleSaveBlock = async (updatedBlock: ContentBlock) => {
     if (!selectedRecap) return
-
+    
     try {
       // Update the content block in the recap
       const updatedBlocks = selectedRecap.content_blocks.map(block =>
@@ -161,9 +169,11 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         const updatedRecap = getRecapForEvent(selectedEvent.id)
         setSelectedRecap(updatedRecap || null)
       }
+      
+      toast.success('Content block updated successfully!')
     } catch (error) {
       console.error('Error updating content block:', error)
-      alert('Failed to update content block')
+      toast.error('Failed to update content block')
     }
   }
 
@@ -191,15 +201,18 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
         const updatedRecap = getRecapForEvent(selectedEvent.id)
         setSelectedRecap(updatedRecap || null)
       }
+      
+      toast.success('Content block deleted successfully!')
     } catch (error) {
       console.error('Error deleting content block:', error)
-      alert('Failed to delete content block')
+      toast.error('Failed to delete content block')
     }
   }
 
   const handleAddContentBlock = async (blockType: ContentBlockType) => {
     if (!selectedRecap) return
-
+    
+    setAddingBlock(true)
     try {
       // Create default content for different block types
       const getDefaultContent = (type: ContentBlockType) => {
@@ -250,7 +263,9 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
       
     } catch (error) {
       console.error('Error adding content block:', error)
-      alert('Failed to add content block')
+      toast.error('Failed to add content block')
+    } finally {
+      setAddingBlock(false)
     }
   }
 
@@ -442,6 +457,7 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                       recap={selectedRecap}
                       onAddBlock={handleAddContentBlock}
                       onEditBlock={handleEditBlock}
+                      addingBlock={addingBlock}
                     />
                   </div>
                 </div>
@@ -456,13 +472,27 @@ export function EventRecapManager({ onClose }: EventRecapManagerProps) {
                   
                   <div className="space-y-3">
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={creatingRecap !== selectedEvent.id ? { scale: 1.05 } : {}}
+                      whileTap={creatingRecap !== selectedEvent.id ? { scale: 0.95 } : {}}
                       onClick={() => createSampleRecap(selectedEvent.id)}
-                      className="flex items-center justify-center w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                      disabled={creatingRecap === selectedEvent.id}
+                      className={`flex items-center justify-center w-full px-4 py-3 rounded-lg transition-colors ${
+                        creatingRecap === selectedEvent.id
+                          ? 'bg-purple-400 cursor-not-allowed'
+                          : 'bg-purple-600 hover:bg-purple-700'
+                      } text-white`}
                     >
-                      <Plus size={16} className="mr-2" />
-                      Create Sample Recap
+                      {creatingRecap === selectedEvent.id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                          Creating Recap...
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-2" />
+                          Create Sample Recap
+                        </>
+                      )}
                     </motion.button>
                     
                     {selectedEvent.recap_file_url && (

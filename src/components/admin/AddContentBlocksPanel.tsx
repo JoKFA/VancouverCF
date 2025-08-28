@@ -7,6 +7,7 @@ interface AddContentBlocksPanelProps {
   recap: EventRecap
   onAddBlock: (blockType: ContentBlockType) => void
   onEditBlock: (block: ContentBlock) => void
+  addingBlock?: boolean
 }
 
 interface BlockTypeConfig {
@@ -55,7 +56,7 @@ const blockTypeConfigs: BlockTypeConfig[] = [
   }
 ]
 
-function AddContentBlocksPanel({ recap, onAddBlock, onEditBlock }: AddContentBlocksPanelProps) {
+function AddContentBlocksPanel({ recap, onAddBlock, onEditBlock, addingBlock = false }: AddContentBlocksPanelProps) {
   const getMissingBlockTypes = (): ContentBlockType[] => {
     const existingTypes = recap.content_blocks?.map(block => block.type) || []
     return blockTypeConfigs
@@ -188,13 +189,27 @@ function AddContentBlocksPanel({ recap, onAddBlock, onEditBlock }: AddContentBlo
                   </>
                 ) : (
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={!addingBlock ? { scale: 1.05 } : {}}
+                    whileTap={!addingBlock ? { scale: 0.95 } : {}}
                     onClick={() => onAddBlock(config.type)}
-                    className="w-full flex items-center justify-center px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                    disabled={addingBlock}
+                    className={`w-full flex items-center justify-center px-3 py-2 text-white text-sm font-semibold rounded-lg transition-all ${
+                      addingBlock
+                        ? 'bg-gradient-to-r from-purple-400 to-blue-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                    }`}
                   >
-                    <Plus size={16} className="mr-2" />
-                    Add Block
+                    {addingBlock ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={16} className="mr-2" />
+                        Add Block
+                      </>
+                    )}
                   </motion.button>
                 )}
               </div>
