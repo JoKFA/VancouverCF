@@ -1,5 +1,35 @@
 # Deployment Guide
 
+## Vercel Deployment (Recommended)
+
+1. **Connect to Vercel**
+   - Import your GitHub repository into Vercel
+   - Vercel automatically detects the Vite configuration
+
+2. **Environment Variables**
+   ```
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_ADMIN_ENABLED=false (for production)
+   ```
+
+3. **Deploy**
+   ```bash
+   # Production (no admin)
+   npm run deploy:production
+
+   # Staging (with admin)
+   npm run deploy:staging
+   ```
+
+### Admin Access Strategy
+
+**Production:** `yoursite.vercel.app` (public only)
+
+**Staging:** `yoursite-git-staging.vercel.app` (with admin)
+
+Team members can access the admin dashboard using the staging URL: `/admin-login`.
+
 ## Quick Production Deployment
 
 ### 1. Environment Setup
