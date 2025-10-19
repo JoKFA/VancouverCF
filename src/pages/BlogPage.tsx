@@ -219,10 +219,10 @@ function BlogPage() {
           className="relative mb-12 overflow-hidden"
         >
           {/* Featured Image */}
-          {(recap?.featured_image_url || event.image_url) && (
+          {((recap?.featured_image_url?.trim() || event.image_url)) && (
             <div className="relative h-80 md:h-96 overflow-hidden rounded-2xl shadow-2xl mb-8">
-              <img 
-                src={recap?.featured_image_url || event.image_url} 
+              <img
+                src={(recap?.featured_image_url?.trim() || event.image_url) || ''}
                 alt={event.title}
                 className="w-full h-full object-cover"
               />
