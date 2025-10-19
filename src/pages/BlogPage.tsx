@@ -301,14 +301,6 @@ function BlogPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          {/* Summary */}
-          {recap?.summary && (
-            <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Event Summary</h2>
-              <p className="text-lg text-gray-700 leading-relaxed">{recap.summary}</p>
-            </div>
-          )}
-
           {/* Structured Content */}
           {useStructuredRecap && recap?.content_blocks ? (
             <ContentBlockRenderer blocks={recap.content_blocks} />

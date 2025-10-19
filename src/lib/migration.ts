@@ -61,11 +61,11 @@ export class EventMigrationService {
 
     // Create structured recap based on existing data
     const contentBlocks = await this.createContentBlocks(event)
-    
+
     const recap: Omit<EventRecap, 'id' | 'created_at' | 'updated_at'> = {
       event_id: event.id,
       title: `${event.title} - Event Recap`,
-      summary: event.description,
+      summary: `Thank you for attending ${event.title}! Here's a recap of our event held on ${new Date(event.date).toLocaleDateString()}.`,
       content_blocks: contentBlocks,
       featured_image_url: event.image_url,
       seo_meta: {
@@ -240,6 +240,17 @@ export class EventMigrationService {
    * Generate sample content for testing
    */
   async createSampleRecap(eventId: string): Promise<MigrationResult> {
+    // Fetch the event to get its image
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
+
+    if (eventError) {
+      throw new Error(`Failed to fetch event: ${eventError.message}`)
+    }
+
     const sampleBlocks: ContentBlock[] = [
       {
         id: 'intro-text',
@@ -326,11 +337,13 @@ export class EventMigrationService {
       title: 'Sample Career Fair Recap',
       summary: 'A highly successful networking event connecting job seekers with top Vancouver employers.',
       content_blocks: sampleBlocks,
+      featured_image_url: event.image_url,
       seo_meta: {
         description: 'Recap of our successful career fair featuring 250+ attendees, 45 companies, and 12 job offers.',
         keywords: ['career fair', 'networking', 'jobs', 'vancouver', 'tech careers']
       },
-      published: true
+      published: true,
+      author_id: undefined
     }
 
     const { data: createdRecap, error } = await supabase
